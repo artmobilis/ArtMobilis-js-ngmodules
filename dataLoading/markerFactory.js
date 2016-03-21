@@ -5,19 +5,19 @@
 
 angular.module('dataLoading')
 
-.factory('markerFactory', function() {
+.factory('markerFactory', ['dataArrayFactory', function(dataArrayFactory) {
 
   /**
    * @typedef {object} Marker
    * @property {value} uuid
    * @property {string} name
    * @property {string} type - 'img' or 'tag'
-   * @property {string} img - url of the marker
-   * @property {number} tag_id - 0 - 1023
+   * @property {string} url - url of the image
+   * @property {number} tag_id - 0 - 1023 - necessary if type == "tag"
    */
 
 
-  function Create(id, name, type, img, tag_id) {
+  function Create(id, name, type, url, tag_id) {
     if (typeof id === 'undefined')
       return;
 
@@ -25,7 +25,7 @@ angular.module('dataLoading')
       uuid: id,
       name: name || 'unnamed channel',
       type: type || 'img',
-      img: img || '',
+      url: url || '',
       tag_id: tag_id
     }
 
@@ -49,7 +49,7 @@ angular.module('dataLoading')
   function Parse(json) {
     return new Promise(function(resolve, reject) {
       if (typeof json === 'object') {
-        var result = Create(json.id, json.name, json.type, json.img, json.tag_id);
+        var result = Create(json.uuid, json.name, json.type, json.url, json.tag_id);
         if (result)
           resolve(result);
         else
@@ -60,11 +60,16 @@ angular.module('dataLoading')
     });
   }
 
+  var LoadArray = function(url) { return dataArrayFactory.Load(url, Parse); };
+  var ParseArray = function(json) { return dataArrayFactory.Parse(json, Parse); };
+
   return {
     Create: Create,
     Load: Load,
-    Parse: Parse
+    Parse: Parse,
+    LoadArray: LoadArray,
+    ParseArray: ParseArray
   };
 
 
-})
+}])

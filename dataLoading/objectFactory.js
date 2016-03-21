@@ -4,7 +4,7 @@ angular.module('dataLoading')
 
     function BuildChannelContents(channel_id, data) {
 
-      var channel = data.channels[channel_uuid];
+      var channel = data.channels[channel_id];
       var contents_transforms = channel.contents;
 
       var object = new THREE.Object3D();
@@ -16,7 +16,7 @@ angular.module('dataLoading')
 
         if (typeof contents === 'undefined' || typeof contents.object === 'undefined')
           continue;
-        var contents_mesh = data.object[contents.object];
+        var contents_mesh = data.objects[contents.object];
         if (typeof contents_mesh === 'undefined')
           continue;
 
@@ -32,37 +32,12 @@ angular.module('dataLoading')
       return object;
     }
 
-    function Parse(json) {
-      return new Promise(function(resolve, reject) {
-
-        var object_loader = new AMTHREE.ObjectLoader();
-
-        var object = object_loader.Parse(json);
-        object_loader.manager.onLoad(function() {
-          resolve(object);
-        });
-
-      });
-    }
-
-    function Load(url) {
-      return new Promise(function(resolve, reject) {
-
-        var loader = new AM.JsonLoader();
-
-        loader.Load(url, function() {
-          Parse(loader.json).then(resolve, reject);
-        }, function() {
-          reject('failed to load object: ' + url);
-        });
-
-      });
-    }
-
     return {
       BuildChannelContents: BuildChannelContents,
-      Parse: Parse,
-      Load: Load
+      Parse: AMTHREE.ParseObject,
+      ParseArray: AMTHREE.ParseObjectArray,
+      Load: AMTHREE.LoadObject,
+      LoadArray: AMTHREE.LoadObjectArray
     }
 
 }])

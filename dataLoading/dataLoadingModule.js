@@ -3,4 +3,4 @@
   * @memberOf angular_module
   */
 
-angular.module('dataLoading', []);
+angular.module('dataLoading', ['utility']);
