@@ -5,7 +5,7 @@
 
 angular.module('dataLoading')
 
-.factory('contentFactory', function() {
+.factory('contentFactory', ['dataArrayFactory', function(dataArrayFactory) {
 
   /**
    * @typedef {object} Content
@@ -47,7 +47,7 @@ angular.module('dataLoading')
   function Parse(json) {
     return new Promise(function(resolve, reject) {
       if (typeof json === 'object') {
-        var result = Create(json.id, json.name, json.object);
+        var result = Create(json.uuid, json.name, json.object);
         if (result)
           resolve(result);
         else
@@ -58,11 +58,16 @@ angular.module('dataLoading')
     });
   }
 
+  var LoadArray = function(url) { return dataArrayFactory.Load(url, Parse); };
+  var ParseArray = function(json) { return dataArrayFactory.Parse(json, Parse); };
+
   return {
     Create: Create,
     Load: Load,
-    Parse: Parse
+    Parse: Parse,
+    LoadArray: LoadArray,
+    ParseArray: ParseArray
   };
 
 
-})
+}])

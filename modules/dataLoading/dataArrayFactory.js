@@ -2,36 +2,33 @@
  * @class dataArrayFactory
  * @memberOf angular_module.dataLoading
  */
+//
 
 angular.module('dataLoading')
 
 .factory('dataArrayFactory', function() {
 
-  function Parse(json, dataFactory) {
+  function Parse(json, parse) {
     if (!(json instanceof Array))
       return Promise.reject('failed to parse array: not an array');
 
-    return Promise.all(json.map(function(dataFactory) {
-      return function(elem) {
-        return dataFactory.Parse(elem);
-      }
-    }(dataFactory)));
+    return Promise.all(json.map(function(elem) {
+      return parse(elem);
+    }));
   }
 
-  function Load(url, dataFactory) {
-    return new Promise(function(dataFactory) {
-      return function(resolve, reject) {
+  function Load(url, parse) {
+    return new Promise(function(resolve, reject) {
 
-        var loader = new AM.JsonLoader();
+      var loader = new AM.JsonLoader();
 
-        loader.Load(url, function() {
-          Parse(loader.json, dataFactory).then(resolve, reject);
-        }, function() {
-          reject('failed to load data array: ' + url);
-        });
+      loader.Load(url, function() {
+        Parse(loader.json, parse).then(resolve, reject);
+      }, function() {
+        reject('failed to load data array: ' + url);
+      });
 
-      }
-    }(dataFactory));
+    });
   }
 
 

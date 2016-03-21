@@ -5,28 +5,28 @@
 
 angular.module('dataLoading')
 
-.factory('channelFactory', function() {
+.factory('channelFactory', ['dataArrayFactory', function(dataArrayFactory) {
 
   /**
-   * @typedef {object} Point3D
-   * @property {number} x
-   * @property {number} y
-   * @property {number} z
-   */
+  * @typedef {object} Point3D
+  * @property {number} x
+  * @property {number} y
+  * @property {number} z
+  */
 
   /**
-   * @typedef {object} Channel
-   * @property {value} uuid
-   * @property {string} name
-   * @property {value} marker
-   * @property {object[]} contents
-   * @property {value} contents[].uuid
-   * @property {Point3D} contents[].position
-   * @property {Point3D} contents[].rotation
-   * @property {number} contents[].scale
-   */
+  * @typedef {object} Channel
+  * @property {value} uuid
+  * @property {string} name
+  * @property {value} marker
+  * @property {object[]} contents
+  * @property {value} contents[].uuid
+  * @property {Point3D} contents[].position
+  * @property {Point3D} contents[].rotation
+  * @property {number} contents[].scale
+  */
 
- 
+
   function ClonePoint3D(point) {
     point = point || {};
     return {
@@ -34,6 +34,23 @@ angular.module('dataLoading')
       y: point.y || 0,
       z: point.z || 0
     };
+  }
+
+  function AddContent(channel, content) {
+    if (content.uuid) {
+      var new_content = {
+        uuid: content.uuid,
+        name: content.name || 'unnamed channel',
+        position: ClonePoint3D(content.position),
+        rotation: ClonePoint3D(content.rotation),
+        scale: content.scale || 1
+      };
+
+      channel.contents.push(new_content);
+    }
+    else {
+      console.log('failed to add content to channel ' + channel.uuid + ': uuid undefined');
+    }
   }
 
   function Create(id, name, marker, contents) {
@@ -49,21 +66,7 @@ angular.module('dataLoading')
 
     if (contents) {
       for (var i = 0, c = contents.length; i < c; ++i) {
-        var c = contents[i];
-
-        if (content.uuid) {
-          var content = {
-            uuid: c.uuid,
-            name: c.name || 'unnamed channel',
-            position: ClonePoint3D(c.position),
-            rotation: ClonePoint3D(c.rotation),
-            scale: c.scale || 1
-          };
-
-          journey.contents.push(content);
-        }
-        else
-          console.log('failed to add content to channel ' + channel.uuid + ': uuid undefined');
+        AddContent(channel, contents[i]);
       }
     }
 
@@ -87,7 +90,7 @@ angular.module('dataLoading')
   function Parse(json) {
     return new Promise(function(resolve, reject) {
       if (typeof json === 'object') {
-        var result = Create(json.id, json.name, json.marker, json.contents);
+        var result = Create(json.uuid, json.name, json.marker, json.contents);
         if (result)
           resolve(result);
         else
@@ -98,11 +101,17 @@ angular.module('dataLoading')
     });
   }
 
+  var LoadArray = function(url) { return dataArrayFactory.Load(url, Parse); };
+  var ParseArray = function(json) { return dataArrayFactory.Parse(json, Parse); };
+
   return {
     Create: Create,
     Load: Load,
-    Parse: Parse
+    Parse: Parse,
+    LoadArray: LoadArray,
+    ParseArray: ParseArray,
+    AddContent: AddContent
   };
 
 
-})
+}])

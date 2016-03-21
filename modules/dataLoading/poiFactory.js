@@ -5,7 +5,8 @@
 
 angular.module('dataLoading')
 
-.factory('poiFactory', function() {
+.factory('poiFactory', ['dataArrayFactory', 'CoordinatesConverterSvc',
+  function(dataArrayFactory, CoordinatesConverterSvc) {
 
   /**
    * @typedef {object} POI
@@ -15,8 +16,8 @@ angular.module('dataLoading')
    * @property {number} longitude
    * @property {number} radius
    * @property {object[]} channels
-   * @property {value} channels[].uuid
-   * @property {value} channels[].object
+   * @property {value} channels[].uuid - id of the channel
+   * @property {value} channels[].object - optionnal - id of the object used as a landmark
    * @property {number} channels[].longitude
    * @property {number} channels[].latitude
    * @property {number} channels[].altitude
@@ -36,25 +37,30 @@ angular.module('dataLoading')
       radius: radius || 10,
       channels: []
     }
+    poi.position = CoordinatesConverterSvc.ConvertLocalCoordinates(poi.latitude, poi.longitude);
 
     if (channels) {
       for (var i = 0, c = channels.length; i < c; ++i) {
         var channel = channels[i];
         if (typeof channel.uuid !== 'undefined') {
-          poi.channels.push({
+          var new_chan = {
             uuid: channel.uuid,
             object: channel.object,
             longitude: channel.longitude || 0,
             latitude: channel.latitude || 0,
             altitude: channel.altitude || 0,
             scale: channel.scale || 1
-          });
+          };
+          new_chan.position = CoordinatesConverterSvc.ConvertLocalCoordinates(channel.latitude, channel.longitude);
+
+          poi.channels.push(new_chan);
         }
         else
           console.log('failed to add channel to POI: uuid undefined');
       }
     }
 
+    return poi;
   }
 
   function Load(url) {
@@ -86,11 +92,16 @@ angular.module('dataLoading')
     });
   }
 
+  var LoadArray = function(url) { return dataArrayFactory.Load(url, Parse); };
+  var ParseArray = function(json) { return dataArrayFactory.Parse(json, Parse); };
+
   return {
     Create: Create,
     Load: Load,
-    Parse: Parse
+    Parse: Parse,
+    LoadArray: LoadArray,
+    ParseArray: ParseArray
   };
 
 
-})
+}])
