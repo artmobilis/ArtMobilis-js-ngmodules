@@ -1,0 +1,13 @@
+{
+  "name": "artmobilis-js-ngmodules",
+  "version": "0.0.1",
+  "description": "",
+  "author": "Association Le Hublot (http://www.lehublot.net/)",
+  "licence": "GNU GPL v3",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-jshint": "^2.0.0",
+    "jshint": "^2.9.1",
+    "jshint-stylish": "^2.1.0"
+  }
+}
