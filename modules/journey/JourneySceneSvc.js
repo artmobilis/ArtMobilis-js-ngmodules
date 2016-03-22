@@ -342,7 +342,7 @@ var JourneySceneSvc = (function() {
 
       cam_pos.setFromMatrixPosition(_scene.GetCamera().matrixWorld);
 
-      for (poi_id in journey.pois) {
+      for (poi_id of journey.pois) {
         var poi = pois[poi_id];
         if (!poi) continue;
 
