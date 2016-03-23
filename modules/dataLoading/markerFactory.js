@@ -23,7 +23,7 @@ angular.module('dataLoading')
 
     var marker = {
       uuid: id,
-      name: name || 'unnamed channel',
+      name: name || 'unnamed marker',
       type: type || 'img',
       url: url || '',
       tag_id: tag_id
@@ -40,7 +40,7 @@ angular.module('dataLoading')
       loader.Load(url, function() {
         Parse(loader.json).then(resolve, reject);
       }, function() {
-        reject('failed to load channel: ' + url);
+        reject('failed to load marker: ' + url);
       });
 
     });
