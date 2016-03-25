@@ -41,7 +41,7 @@ angular.module('dataLoading')
     if (content.uuid) {
       var new_content = {
         uuid: content.uuid,
-        name: content.name || 'unnamed channel',
+        name: content.name || 'unnamed content',
         position: ClonePoint3D(content.position),
         rotation: ClonePoint3D(content.rotation),
         scale: content.scale || 1
