@@ -20,6 +20,7 @@ angular.module('dataLoading')
   * @property {string} name
   * @property {value} marker
   * @property {object[]} contents
+  * @property {string} contents[].name
   * @property {value} contents[].uuid
   * @property {Point3D} contents[].position
   * @property {Point3D} contents[].rotation
