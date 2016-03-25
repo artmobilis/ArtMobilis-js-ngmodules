@@ -24,6 +24,25 @@ angular.module('dataLoading')
    * @property {number} channels[].scale
    */
   
+  function AddChannel(poi, uuid, object, longitude, latitude, altitude, scale) {
+    var found = poi.channels.find(function(elem) {
+      return elem.uuid === uuid;
+    });
+
+    if (!found) {
+      var new_chan = {
+        uuid: uuid,
+        object: object,
+        longitude: longitude || 0,
+        latitude: latitude || 0,
+        altitude: altitude || 0,
+        scale: scale || 1
+      };
+      new_chan.position = CoordinatesConverterSvc.ConvertLocalCoordinates(latitude, longitude);
+      poi.channels.push(new_chan);
+    }
+    return !found;
+  }
 
   function Create(id, name, latitude, longitude, radius, channels) {
     if (typeof id === 'undefined')
@@ -43,20 +62,11 @@ angular.module('dataLoading')
       for (var i = 0, c = channels.length; i < c; ++i) {
         var channel = channels[i];
         if (typeof channel.uuid !== 'undefined') {
-          var new_chan = {
-            uuid: channel.uuid,
-            object: channel.object,
-            longitude: channel.longitude || 0,
-            latitude: channel.latitude || 0,
-            altitude: channel.altitude || 0,
-            scale: channel.scale || 1
-          };
-          new_chan.position = CoordinatesConverterSvc.ConvertLocalCoordinates(channel.latitude, channel.longitude);
-
-          poi.channels.push(new_chan);
+          AddChannel(poi, channel.uuid, channel.object, channel.longitude,
+            channel.latitude, channel.altitude, channel.scale);
         }
         else
-          console.log('failed to add channel to POI: uuid undefined');
+          console.warn('failed to add channel to POI: uuid undefined');
       }
     }
 
@@ -100,7 +110,8 @@ angular.module('dataLoading')
     Load: Load,
     Parse: Parse,
     LoadArray: LoadArray,
-    ParseArray: ParseArray
+    ParseArray: ParseArray,
+    AddChannel: AddChannel
   };
 
 

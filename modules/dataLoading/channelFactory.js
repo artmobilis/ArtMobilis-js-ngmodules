@@ -20,6 +20,7 @@ angular.module('dataLoading')
   * @property {string} name
   * @property {value} marker
   * @property {object[]} contents
+  * @property {string} contents[].name
   * @property {value} contents[].uuid
   * @property {Point3D} contents[].position
   * @property {Point3D} contents[].rotation
@@ -40,7 +41,7 @@ angular.module('dataLoading')
     if (content.uuid) {
       var new_content = {
         uuid: content.uuid,
-        name: content.name || 'unnamed channel',
+        name: content.name || 'unnamed content',
         position: ClonePoint3D(content.position),
         rotation: ClonePoint3D(content.rotation),
         scale: content.scale || 1

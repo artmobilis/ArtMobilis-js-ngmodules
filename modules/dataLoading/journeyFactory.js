@@ -13,6 +13,12 @@ angular.module('dataLoading')
    * @property {value[]} pois
    */
 
+  function AddPoi(journey, poi_id) {
+    var insert = (journey.pois.indexOf(poi_id) < 0);
+    if (insert)
+      journey.pois.push(poi_id);
+    return insert;
+  }
 
   function Create(name, pois) {
     var journey = {
@@ -66,7 +72,8 @@ angular.module('dataLoading')
     Load: Load,
     Parse: Parse,
     LoadArray: LoadArray,
-    ParseArray: ParseArray
+    ParseArray: ParseArray,
+    AddPoi: AddPoi
   };
 
 

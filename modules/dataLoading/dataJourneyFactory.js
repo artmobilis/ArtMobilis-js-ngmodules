@@ -214,7 +214,13 @@ angular.module('dataLoading')
     LoadData: LoadData,
     Parse: Parse,
     ParseData: ParseData,
-    Create: Create
+    Create: Create,
+    journeyFactory: journeyFactory,
+    poiFactory: poiFactory,
+    channelFactory: channelFactory,
+    markerFactory: markerFactory,
+    contentFactory: contentFactory,
+    objectFactory: objectFactory
   };
 
 

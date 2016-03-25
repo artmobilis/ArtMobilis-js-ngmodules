@@ -3,15 +3,15 @@ window = self;
 var LIB_PATH = '../../lib/';
 
 // aruco
-importScripts(LIB_PATH + 'aruco/cv.js');
-importScripts(LIB_PATH + 'aruco/aruco.js');
-importScripts(LIB_PATH + 'aruco/svd.js');
-importScripts(LIB_PATH + 'aruco/posit1.js');
+importScripts(LIB_PATH + 'js-aruco/src/cv.js');
+importScripts(LIB_PATH + 'js-aruco/src/aruco.js');
+importScripts(LIB_PATH + 'js-aruco/src/svd.js');
+importScripts(LIB_PATH + 'js-aruco/src/posit1.js');
 
 // jsfeat
-importScripts(LIB_PATH + 'jsfeat/jsfeat.js');
+importScripts(LIB_PATH + 'jsfeat/build/jsfeat.js');
 
-importScripts(LIB_PATH + 'ArtMobilib/artmobilib.js');
+importScripts(LIB_PATH + 'ArtMobilib/build/artmobilib.js');
 
 
 
