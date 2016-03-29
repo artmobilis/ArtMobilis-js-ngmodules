@@ -15,6 +15,14 @@ angular.module('dataLoading')
    */
 
 
+  /**
+  * Creates a Content
+  * @memberOf angular_module.dataLoading.contentFactory
+  * @param {value} id
+  * @param {string} [name='unnamed channel']
+  * @param {value} [object] - id of a THREE.Object3D
+  * @returns {Content}
+  */
   function Create(id, name, object) {
     if (typeof id === 'undefined') {
       console.log('failed to create channel: id undefined');
@@ -30,6 +38,12 @@ angular.module('dataLoading')
     return content;
   }
 
+  /**
+  * Loads the json file of a Content
+  * @memberOf angular_module.dataLoading.contentFactory
+  * @param {string} url
+  * @returns {Promise.<Content, string>} a promise
+  */
   function Load(url) {
     return new Promise(function(resolve, reject) {
 
@@ -44,6 +58,12 @@ angular.module('dataLoading')
     });
   }
 
+  /**
+  * Parses the json object of a Content
+  * @memberOf angular_module.dataLoading.contentFactory
+  * @param {object} json
+  * @returns {Promise.<Content, string>} a promise
+  */
   function Parse(json) {
     return new Promise(function(resolve, reject) {
       if (typeof json === 'object') {
@@ -58,7 +78,20 @@ angular.module('dataLoading')
     });
   }
 
+  /**
+  * Loads the json file of an array of Content
+  * @memberOf angular_module.dataLoading.contentFactory
+  * @param {string} url
+  * @returns {Promise.<Content[], string>} a promise
+  */
   var LoadArray = function(url) { return dataArrayFactory.Load(url, Parse); };
+  
+  /**
+  * Parses the json object of an array of Content
+  * @memberOf angular_module.dataLoading.contentFactory
+  * @param {string} url
+  * @returns {Promise.<Content[], string>} a promise
+  */
   var ParseArray = function(json) { return dataArrayFactory.Parse(json, Parse); };
 
   return {

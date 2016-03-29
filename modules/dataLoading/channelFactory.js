@@ -37,6 +37,12 @@ angular.module('dataLoading')
     };
   }
 
+  /**
+  * Adds a content to a Channel
+  * @memberOf angular_module.dataLoading.channelFactory
+  * @param {Channel} channel
+  * @param {Content} content
+  */
   function AddContent(channel, content) {
     if (content.uuid) {
       var new_content = {
@@ -54,6 +60,15 @@ angular.module('dataLoading')
     }
   }
 
+  /**
+  * Creates a Channel
+  * @memberOf angular_module.dataLoading.channelFactory
+  * @param {value} id
+  * @param {string} [name='unnamed channel']
+  * @param {value} [marker] - id of a Marker
+  * @param {Content[]} [contents] - array of Content
+  * @returns {Channel}
+  */
   function Create(id, name, marker, contents) {
     if (typeof id === 'undefined')
       return;
@@ -74,6 +89,12 @@ angular.module('dataLoading')
     return channel;
   }
 
+  /**
+  * Loads the json file of a Channel
+  * @memberOf angular_module.dataLoading.channelFactory
+  * @param {string} url
+  * @returns {Promise.<Channel, string>} a promise
+  */
   function Load(url) {
     return new Promise(function(resolve, reject) {
 
@@ -88,6 +109,12 @@ angular.module('dataLoading')
     });
   }
 
+  /**
+  * Parses the json object of a Channel
+  * @memberOf angular_module.dataLoading.channelFactory
+  * @param {object} json
+  * @returns {Promise.<Channel, string>} a promise
+  */
   function Parse(json) {
     return new Promise(function(resolve, reject) {
       if (typeof json === 'object') {
@@ -102,7 +129,20 @@ angular.module('dataLoading')
     });
   }
 
+  /**
+  * Loads the json file of an array of Channel
+  * @memberOf angular_module.dataLoading.channelFactory
+  * @param {string} url
+  * @returns {Promise.<Channel[], string>} a promise
+  */
   var LoadArray = function(url) { return dataArrayFactory.Load(url, Parse); };
+
+  /**
+  * Parses the json object of an array of Channel
+  * @memberOf angular_module.dataLoading.channelFactory
+  * @param {string} url
+  * @returns {Promise.<Channel[], string>} a promise
+  */
   var ParseArray = function(json) { return dataArrayFactory.Parse(json, Parse); };
 
   return {
