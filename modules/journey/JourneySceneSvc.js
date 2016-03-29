@@ -170,9 +170,9 @@ var JourneySceneSvc = (function() {
       }
     }
 
-    function StartMarkerDetector() {
+    function StartMarkerDetector(use_web_worker) {
       if (!MarkerDetectorSvc.Started()) {
-        MarkerDetectorSvc.Start(_camera_video_element);
+        MarkerDetectorSvc.Start(_camera_video_element, use_web_worker);
       }
     }
 
@@ -210,7 +210,7 @@ var JourneySceneSvc = (function() {
     }
 
 
-    function Load() {
+    function Load(use_web_worker) {
       _loading_manager.Start();
       LoadingSvc.Start();
 
@@ -220,7 +220,7 @@ var JourneySceneSvc = (function() {
 
         LoadData();
 
-        StartMarkerDetector();
+        StartMarkerDetector(use_web_worker);
 
         LoadNavigationScene();
 
@@ -235,7 +235,7 @@ var JourneySceneSvc = (function() {
       body.position.z = e.detail.y;
     }
 
-    this.Start = function() {
+    this.Start = function(use_web_worker) {
       if (that.Started())
         return;
 
@@ -245,7 +245,7 @@ var JourneySceneSvc = (function() {
         LoadingSvc.End();
       });
 
-      Load();
+      Load(use_web_worker);
 
       _loading_manager.OnEnd(function() {
         JourneyManagerSvc.Start();

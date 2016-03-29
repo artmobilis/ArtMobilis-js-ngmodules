@@ -91,7 +91,7 @@ function MarkerDetector() {
       return fun(data);
   }
 
-  function CmdOnNewImage(data)           { OnNewImage(data.image); }
+  function CmdOnNewImage(data)           { return OnNewImage(data.image); }
   function CmdAddMarker(data)            { AddMarker(data.image_data, data.uuid); }
   function CmdClear()                    { Clear(); }
   function CmdActiveAll(data)            { ActiveAll(data.value); }
@@ -105,6 +105,6 @@ function MarkerDetector() {
   this.ActiveAll = ActiveAll;
   this.Active = Active;
   this.EnableImageDetection = EnableImageDetection;
-  this.EnableTagDetection = enable_tag_detection;
+  this.EnableTagDetection = EnableTagDetection;
   this.ComputeImage = OnNewImage;
 }

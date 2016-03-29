@@ -47,6 +47,7 @@
         use_web_worker = true;
 
       if (!_started) {
+        _started = true;
         _video = video_element;
         _use_web_worker = use_web_worker;
         if (use_web_worker) {
@@ -73,25 +74,24 @@
               break;
             }
           }
-          else {
-            _marker_detector = new MarkerDetector();
-          }
         }
-
-        // _worker.postMessage( { cmd: 'enable_tag_detection', value: false } );
-
-        document.body.onkeydown = function() {
-          _enabled = !_enabled;
-        };
+        else {
+          _marker_detector = new MarkerDetector();
+        }
       }
+
+      // _worker.postMessage( { cmd: 'enable_tag_detection', value: false } );
+
+      document.body.onkeydown = function() {
+        _enabled = !_enabled;
+      };
     };
 
     this.Update = function() {
       if (!_enabled)
         return;
 
-      if (_video instanceof HTMLVideoElement
-        && _video.readyState === _video.HAVE_ENOUGH_DATA) {
+      if (_video instanceof HTMLVideoElement && _video.readyState === _video.HAVE_ENOUGH_DATA) {
 
         var new_size = GetVideoNewSize(_video.videoWidth, _video.videoHeight, that.video_size_target);
         _canvas.width = new_size.width;

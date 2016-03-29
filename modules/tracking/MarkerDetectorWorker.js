@@ -32,15 +32,15 @@ function SendResult(tags, marker, frame) {
 
 onmessage = function(e) {
   var cmd = e.data.cmd;
-  var result = MarkerDetector.Command(cmd, e.data);
+  var result = _marker_detector.Command(cmd, e.data);
 
   if (cmd === 'new_img') {
-    SendResult(result.tags, result.marker, data.frame);
+    SendResult(result.tags, result.marker, e.data.frame);
   }
   else if (cmd === 'add_marker') {
     var msg = {
       cmd: 'marker_added',
-      uuid: data.uuid
+      uuid: e.data.uuid
     };
     postMessage(msg);
   }
