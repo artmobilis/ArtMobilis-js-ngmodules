@@ -15,6 +15,8 @@
     var that = this;
 
     var _worker;
+    var _marker_detector;
+    var _use_web_worker;
 
     var _canvas = document.createElement('canvas');
     var _ctx = _canvas.getContext('2d');
@@ -31,6 +33,7 @@
     var _on_added_callbacks = {};
 
     var _enabled = true;
+    var _started = false;
 
     this.video_size_target = 210;
 
@@ -39,50 +42,56 @@
     this.quaternion = new THREE.Quaternion();
     this.scale = new THREE.Vector3();
 
-    this.Start = function(video_element) {
-      if (!_worker) {
-        _frame = 0;
-        _frame_worker = 0;
+    this.Start = function(video_element, use_web_worker) {
+      if (typeof use_web_worker !== 'boolean')
+        use_web_worker = true;
 
+      if (!_started) {
+        _started = true;
         _video = video_element;
-        _worker = new Worker(WORKER_SCRIPT_PATH);
-        _worker.onmessage = function(e) {
+        _use_web_worker = use_web_worker;
+        if (use_web_worker) {
+          _frame = 0;
+          _frame_worker = 0;
 
-          switch (e.data.cmd) {
+          _worker = new Worker(WORKER_SCRIPT_PATH);
+          _worker.onmessage = function(e) {
 
-            case 'markers':
-            _marker = e.data.marker;
-            _tags = e.data.tags; 
-            _frame_worker = e.data.frame;
-            break;
+            switch (e.data.cmd) {
 
-            case 'marker_added':
-            var callback = _on_added_callbacks[e.data.uuid];
-            if (callback) {
-              delete _on_added_callbacks[e.data.uuid];
-              callback();
+              case 'markers':
+              _marker = e.data.marker;
+              _tags = e.data.tags; 
+              _frame_worker = e.data.frame;
+              break;
+
+              case 'marker_added':
+              var callback = _on_added_callbacks[e.data.uuid];
+              if (callback) {
+                delete _on_added_callbacks[e.data.uuid];
+                callback();
+              }
+              break;
             }
-            break;
           }
         }
-
-        // _worker.postMessage( { cmd: 'enable_tag_detection', value: false } );
-
-        document.body.onkeydown = function() {
-          _enabled = !_enabled;
-        };
+        else {
+          _marker_detector = new MarkerDetector();
+        }
       }
+
+      // _worker.postMessage( { cmd: 'enable_tag_detection', value: false } );
+
+      document.body.onkeydown = function() {
+        _enabled = !_enabled;
+      };
     };
 
     this.Update = function() {
       if (!_enabled)
         return;
 
-      if (_worker && _video instanceof HTMLVideoElement
-        && _video.readyState === _video.HAVE_ENOUGH_DATA
-        && (_frame - _frame_worker < 1)) {
-
-        ++_frame;
+      if (_video instanceof HTMLVideoElement && _video.readyState === _video.HAVE_ENOUGH_DATA) {
 
         var new_size = GetVideoNewSize(_video.videoWidth, _video.videoHeight, that.video_size_target);
         _canvas.width = new_size.width;
@@ -91,26 +100,39 @@
 
         var image = _ctx.getImageData(0, 0, _canvas.width, _canvas.height);
 
-        var obj_data = {
-          cmd: 'new_img',
-          image: image,
-          frame: _frame
-        };
-        _worker.postMessage(obj_data, [image.data.buffer]);
+        if (_use_web_worker) {
+          if (_worker && _frame - _frame_worker < 1) {
+            ++_frame;
 
+
+            var obj_data = {
+              cmd: 'new_img',
+              image: image,
+              frame: _frame
+            };
+            _worker.postMessage(obj_data, [image.data.buffer]);
+          }
+        }
+        else {
+          var result = _marker_detector.ComputeImage(image);
+          _marker = result.marker;
+          _tags = result.tags;
+        }
       }
     };
 
     this.Stop = function() {
       if (_worker) {
         _worker.terminate();
-        _worker = undefined;
-        _video = undefined;
+        _worker = null;
+        _video = null;
+        _marker_detector = null;
       }
+      _started = false;
     };
 
     this.Started = function() {
-      return _worker !== undefined;
+      return _started;
     };
 
     this.GetMarker = function() {
@@ -162,7 +184,8 @@
     };
 
     this.AddMarker = function(url, uuid, on_end) {
-      if (_worker) {
+      if (_started) {
+
 
         if (_on_added_callbacks[uuid]) {
           if (on_end)
@@ -175,37 +198,51 @@
         _image_loader.GetImageData(url, function(url, uuid) {
           return function(image_data) {
 
-            var msg = {
-              cmd: 'add_marker',
-              image_data: image_data,
-              uuid: uuid,
-              name: url
-            };
-
-            _worker.postMessage(msg, [msg.image_data.data.buffer]);
+            if (_use_web_worker) {
+              var msg = {
+                cmd: 'add_marker',
+                image_data: image_data,
+                uuid: uuid,
+                name: url
+              };
+              _worker.postMessage(msg, [msg.image_data.data.buffer]);
+            }
+            else {
+              _marker_detector.AddMarker(image_data, uuid);
+            }
 
           }
         }(url, uuid), true);
 
+
       } else
-        if (on_end) on_end();
+      if (on_end) on_end();
     };
 
     this.ClearMarkers = function() {
-      if (_worker) {
-        _worker.postMessage( { cmd: 'clear' } );
+      if (_started) {
+        if (_use_web_worker)
+          _worker.postMessage( { cmd: 'clear' } );
+        else
+          _marker_detector.Clear();
       }
     };
 
     this.ActiveMarker = function(uuid, bool) {
-      if (_worker) {
-        _worker.postMessage( { cmd: 'active', uuid: uuid, value: (bool == true) } );
+      if (_started) {
+        if (_use_web_worker)
+          _worker.postMessage( { cmd: 'active', uuid: uuid, value: (bool == true) } );
+        else
+          _marker_detector.Active(uuid, bool);
       }
     };
 
     this.ActiveAllMarkers = function(bool) {
-      if (_worker) {
-        _worker.postMessage( { cmd: 'active_all', value: (bool == true) } );
+      if (_started) {
+        if (_use_web_worker)
+          _worker.postMessage( { cmd: 'active_all', value: (bool == true) } );
+        else
+          _marker_detector.ActiveAll(bool);
       }
     };
 
