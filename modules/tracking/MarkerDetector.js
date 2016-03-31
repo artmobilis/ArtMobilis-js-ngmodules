@@ -33,10 +33,21 @@ function MarkerDetector() {
 
     _marker_tracker.ComputeImage(image_data);
     if (_marker_tracker.Match()) {
-      return { corners: _marker_tracker.GetPose(), uuid: _marker_tracker.GetMatchUuid() };
+      return { 
+        matched: true,
+        uuid:    _marker_tracker.GetMatchUuid(),
+        corners: _marker_tracker.GetPose(),
+        screen_corners: _marker_tracker.GetScreenCorners(),
+        matches: _marker_tracker.GetMatches(),
+        profiles: _marker_tracker.GetProfiler()
+      };
     }
 
-    return undefined;
+    return { 
+        matched: false,
+        screen_corners: _marker_tracker.GetScreenCorners(),
+        profiles: _marker_tracker.GetProfiler()
+      };;
   }
 
   function DetectTags(image) {
