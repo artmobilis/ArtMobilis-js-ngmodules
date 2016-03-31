@@ -71,6 +71,10 @@ var JourneySceneSvc = (function() {
 
     var _channels_landmarks;
 
+    var _debugMatches=true;
+    var _image_debugger= new AM.ImageDebugger();
+    _image_debugger.SetData(_context2d, _debugMatches);
+
 
     function OnWindowResize() {
       _canvas2d.width = window.innerWidth;
@@ -334,6 +338,22 @@ var JourneySceneSvc = (function() {
       _tracked_obj_manager.Update();
     }
 
+    function UpdateDebugger() {
+      var marker_corners = MarkerDetectorSvc.GetMarker();
+
+      if (!marker_corners) return;
+
+      _image_debugger.DrawCorners(marker_corners);
+
+      if (marker_corners.matched) {
+        var data_journey = DataManagerSvc.GetData();
+        var channel = data_journey.channels[marker_corners.uuid];
+        var url = data_journey.markers[channel.marker].url;
+
+        _image_debugger.DrawMatches(marker_corners, url);
+      }
+    }
+
     function UpdateBubbles() {
       var data_journey = DataManagerSvc.GetData();
       var journey = data_journey.journey;
@@ -400,6 +420,8 @@ var JourneySceneSvc = (function() {
 
       if (JourneyManagerSvc.GetMode() !== JourneyManagerSvc.MODE_POI)
         UpdateBubbles();
+      
+      UpdateDebugger();
 
       MarkerDetectorSvc.Empty();
     };
