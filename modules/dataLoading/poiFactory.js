@@ -23,6 +23,17 @@ angular.module('dataLoading')
    * @property {number} channels[].altitude
    * @property {number} channels[].scale
    */
+
+  function poiChannelToJSON(name) {
+    return {
+      uuid: this.uuid,
+      object: this.object,
+      longitude: this.longitude,
+      latitude: this.latitude,
+      altitude: this.altitude,
+      scale: this.scale
+    };
+  }
   
   function AddChannel(poi, uuid, object, longitude, latitude, altitude, scale) {
     var found = poi.channels.find(function(elem) {
@@ -36,12 +47,24 @@ angular.module('dataLoading')
         longitude: longitude || 0,
         latitude: latitude || 0,
         altitude: altitude || 0,
-        scale: scale || 1
+        scale: scale || 1,
+        toJSON: poiChannelToJSON
       };
       new_chan.position = CoordinatesConverterSvc.ConvertLocalCoordinates(latitude, longitude);
       poi.channels.push(new_chan);
     }
     return !found;
+  }
+
+  function toJSON() {
+    return {
+      uuid: this.uuid,
+      name: this.name,
+      latitude: this.latitude,
+      longitude: this.longitude,
+      radius: this.radius,
+      channels: this.channels
+    }
   }
 
   function Create(id, name, latitude, longitude, radius, channels) {
@@ -54,7 +77,8 @@ angular.module('dataLoading')
       latitude: latitude || 0,
       longitude: longitude || 0,
       radius: radius || 10,
-      channels: []
+      channels: [],
+      toJSON: toJSON
     }
     poi.position = CoordinatesConverterSvc.ConvertLocalCoordinates(poi.latitude, poi.longitude);
 
