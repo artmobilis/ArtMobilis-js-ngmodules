@@ -343,7 +343,9 @@ var JourneySceneSvc = (function() {
 
       if (!marker_corners) return;
 
-      _image_debugger.DrawCorners(marker_corners);
+      var ratio=Math.max(_canvas2d.width/MarkerDetectorSvc.video_size_target, _canvas2d.height/MarkerDetectorSvc.video_size_target, 1);
+
+      _image_debugger.DrawCorners(marker_corners, ratio);
 
       if (marker_corners.matched) {
         var data_journey = DataManagerSvc.GetData();
