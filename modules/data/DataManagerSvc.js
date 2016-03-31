@@ -57,12 +57,60 @@ angular.module('data')
       return _load_promise;
     }
 
+    function CleanReferences() {
+      var journey = _data_journey.journey;
+      var pois = _data_journey.pois;
+      var channels = _data_journey.channels;
+      var markers = _data_journey.markers;
+      var contents = _data_journey.contents;
+      var objects = _data_journey.objects;
+
+      for (var i = 0; i < journey.pois.length;) {
+        var poi_id = journey.pois[i];
+        if (typeof pois[poi_id] === 'undefined')
+          journey.pois.splice(i, 1);
+        else
+          ++i;
+      }
+
+      for (poi_id in pois) {
+        var poi = pois[poi_id];
+        for (var i = 0; i < poi.channels.length;) {
+          var channel_id = poi.channels[i].uuid;
+          if (typeof channels[channel_id] === 'undefined')
+            poi.channels.splice(i, 1);
+          else
+            ++i;
+        }
+      }
+
+      for (channel_id in channels) {
+        var channel = channels[channel_id];
+        if (typeof markers[channel.marker] === 'undefined')
+          channel.marker = null;
+        for (var i = 0; i < channel.contents.length;) {
+          var content_id = channel.contents[i].uuid;
+          if (typeof contents[content_id] === 'undefined')
+            channel.contents.splice(i, 1);
+          else
+            ++i;
+        }
+      }
+
+      for (content_id in contents) {
+        var content = contents[content_id];
+        if (typeof objects[content.object] === 'undefined')
+          content.object = null;
+      }
+    }
+
     this.LoadData = LoadData;
     this.ParseData = ParseData;
     this.Clear = Clear;
     this.GetData = GetData;
     this.LoadPresets = LoadPresets;
     this.GetLoadPromise = GetLoadPromise;
+    this.CleanReferences = CleanReferences;
 
   }
 

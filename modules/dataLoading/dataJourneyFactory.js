@@ -37,6 +37,26 @@ angular.module('dataLoading')
   'object_array'
   ]
 
+
+  function ObjectToArray(obj) {
+    var ar = [];
+
+    for (key in obj)
+      ar.push(obj[key]);
+
+    return ar;
+  }
+
+  function toJSON() {
+    return {
+      journey: this.journey,
+      pois: ObjectToArray(this.pois),
+      channels: ObjectToArray(this.channels),
+      markers: ObjectToArray(this.markers),
+      contents: ObjectToArray(this.contents)
+    }
+  }
+
   function Create() {
     return {
       journey: journeyFactory.Create(),
@@ -44,7 +64,8 @@ angular.module('dataLoading')
       channels: {},
       markers: {},
       contents: {},
-      objects: {}
+      objects: {},
+      toJSON: toJSON
     }
   }
 
