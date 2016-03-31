@@ -37,6 +37,7 @@ function MarkerDetector() {
         matched: true,
         uuid:    _marker_tracker.GetMatchUuid(),
         corners: _marker_tracker.GetPose(),
+        trained_corners:_marker_tracker.GetTrainedCorners(), 
         screen_corners: _marker_tracker.GetScreenCorners(),
         matches: _marker_tracker.GetMatches(),
         profiles: _marker_tracker.GetProfiler()
