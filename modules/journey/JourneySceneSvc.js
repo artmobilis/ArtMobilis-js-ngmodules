@@ -321,15 +321,15 @@ var JourneySceneSvc = (function() {
 
       if (marker_corners) {
         console.log('image processed, no marker detected');
-      if (marker_corners.matched) {
-        console.log('marker detected: ' + marker_corners.uuid);
-        MarkerDetectorSvc.SetTransform(marker_corners);
-        _tracked_obj_manager.TrackCompose(marker_corners.uuid,
-          MarkerDetectorSvc.position,
-          MarkerDetectorSvc.quaternion,
-          MarkerDetectorSvc.scale);
+        if (marker_corners.matched) {
+          console.log('marker detected: ' + marker_corners.uuid);
+          MarkerDetectorSvc.SetTransform(marker_corners);
+          _tracked_obj_manager.TrackCompose(marker_corners.uuid,
+            MarkerDetectorSvc.position,
+            MarkerDetectorSvc.quaternion,
+            MarkerDetectorSvc.scale);
+        }
       }
-    }
 
       _tracked_obj_manager.Update();
     }

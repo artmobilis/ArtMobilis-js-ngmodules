@@ -40,13 +40,14 @@ function MarkerDetector() {
         screen_corners: _marker_tracker.GetScreenCorners(),
         matches: _marker_tracker.GetMatches(),
         profiles: _marker_tracker.GetProfiler()
-      };    }
+      };    
+    }
 
     return { 
-        matched: false,
-        screen_corners: _marker_tracker.GetScreenCorners(),
-        profiles: _marker_tracker.GetProfiler()
-      };;
+      matched: false,
+      screen_corners: _marker_tracker.GetScreenCorners(),
+      profiles: _marker_tracker.GetProfiler()
+    };
   }
 
   function DetectTags(image) {
