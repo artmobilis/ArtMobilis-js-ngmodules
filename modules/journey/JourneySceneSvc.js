@@ -71,6 +71,10 @@ var JourneySceneSvc = (function() {
 
     var _channels_landmarks;
 
+    var _debugMatches=true;
+    var _image_debugger= new AM.ImageDebugger();
+    _image_debugger.SetData(_context2d, _debugMatches);
+
 
     function OnWindowResize() {
       _canvas2d.width = window.innerWidth;
@@ -320,15 +324,36 @@ var JourneySceneSvc = (function() {
       }
 
       if (marker_corners) {
-        console.log('marker detected: ' + marker_corners.uuid);
-        MarkerDetectorSvc.SetTransform(marker_corners);
-        _tracked_obj_manager.TrackCompose(marker_corners.uuid,
-          MarkerDetectorSvc.position,
-          MarkerDetectorSvc.quaternion,
-          MarkerDetectorSvc.scale);
+        console.log('image processed, no marker detected');
+        if (marker_corners.matched) {
+          console.log('marker detected: ' + marker_corners.uuid);
+          MarkerDetectorSvc.SetTransform(marker_corners);
+          _tracked_obj_manager.TrackCompose(marker_corners.uuid,
+            MarkerDetectorSvc.position,
+            MarkerDetectorSvc.quaternion,
+            MarkerDetectorSvc.scale);
+        }
       }
 
       _tracked_obj_manager.Update();
+    }
+
+    function UpdateDebugger() {
+      var marker_corners = MarkerDetectorSvc.GetMarker();
+
+      if (!marker_corners) return;
+
+      var ratio=Math.max(_canvas2d.width/MarkerDetectorSvc.video_size_target, _canvas2d.height/MarkerDetectorSvc.video_size_target, 1);
+
+      _image_debugger.DrawCorners(marker_corners, ratio);
+
+      if (marker_corners.matched) {
+        var data_journey = DataManagerSvc.GetData();
+        var channel = data_journey.channels[marker_corners.uuid];
+        var url = data_journey.markers[channel.marker].url;
+
+        _image_debugger.DrawMatches(marker_corners, url);
+      }
     }
 
     function UpdateBubbles() {
@@ -397,6 +422,8 @@ var JourneySceneSvc = (function() {
 
       if (JourneyManagerSvc.GetMode() !== JourneyManagerSvc.MODE_POI)
         UpdateBubbles();
+      
+      UpdateDebugger();
 
       MarkerDetectorSvc.Empty();
     };
