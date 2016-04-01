@@ -71,7 +71,7 @@ var JourneySceneSvc = (function() {
 
     var _channels_landmarks;
 
-    var _debugMatches=true;
+    var _debugMatches=false;
     var _image_debugger= new AM.ImageDebugger();
     _image_debugger.SetData(_context2d, _debugMatches);
 
@@ -343,8 +343,7 @@ var JourneySceneSvc = (function() {
 
       if (!marker_corners) return;
 
-      var ratio=Math.max(_canvas2d.width/MarkerDetectorSvc.video_size_target, _canvas2d.height/MarkerDetectorSvc.video_size_target, 1);
-
+      var ratio=Math.max(_canvas2d.width/MarkerDetectorSvc.video_size_target, _canvas2d.height/MarkerDetectorSvc.video_size_target);
       _image_debugger.DrawCorners(marker_corners, ratio);
 
       if (marker_corners.matched) {
@@ -414,8 +413,6 @@ var JourneySceneSvc = (function() {
       _scene.Update();
 
       _scene.Render();
-
-
 
       _context2d.clearRect(0, 0, _canvas2d.width, _canvas2d.height);
       _context2d.drawImage(_canvas3d, 0, 0);
