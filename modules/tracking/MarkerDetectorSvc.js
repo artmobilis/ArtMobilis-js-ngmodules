@@ -1,6 +1,6 @@
 (function() {
 
-  var WORKER_SCRIPT_PATH = 'js/tracking/MarkerDetectorWorker.js';
+  var WORKER_SCRIPT_PATH = 'lib/ArtMobilis-js-ngmodules/modules/tracking/MarkerDetectorWorker.js';
 
   function GetVideoNewSize(width, height, target_size) {
     var ratio_w = target_size / width;

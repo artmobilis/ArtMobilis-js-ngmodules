@@ -1,6 +1,6 @@
 window = self;
 
-var LIB_PATH = '../../lib/';
+var LIB_PATH = '../../../lib/';
 
 // aruco
 importScripts(LIB_PATH + 'js-aruco/src/cv.js');
