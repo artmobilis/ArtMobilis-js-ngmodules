@@ -1,0 +1,14 @@
+{
+  "name": "artmobilis-js-ngmodules",
+  "version" : "0.0.1",
+  "description" : "",
+  "author" : "Association Le Hublot (http://www.lehublot.net/)",
+  "licence": "GNU GPL v3",
+  "ignore": [
+    "doc",
+    "utils",
+    "bower.json",
+    ".gitignore",
+    "package.json"
+  ]
+}
