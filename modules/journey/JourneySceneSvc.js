@@ -72,6 +72,7 @@ var JourneySceneSvc = (function() {
     var _channels_landmarks;
 
     var _debugMatches=false;
+    var _marker_corners;
     var _image_debugger= new AM.ImageDebugger();
     _image_debugger.SetData(_context2d, _debugMatches);
 
@@ -341,18 +342,23 @@ var JourneySceneSvc = (function() {
     function UpdateDebugger() {
       var marker_corners = MarkerDetectorSvc.GetMarker();
 
-      if (!marker_corners) return;
+      if (marker_corners === undefined)  {
+        if( _marker_corners === undefined) 
+          return;
+        marker_corners = _marker_corners; // use last detection for continuous display
+      }
 
       var ratio=Math.max(_canvas2d.width/MarkerDetectorSvc.video_size_target, _canvas2d.height/MarkerDetectorSvc.video_size_target);
       _image_debugger.DrawCorners(marker_corners, ratio);
 
-      if (marker_corners.matched) {
+      if (marker_corners.matched){
         var data_journey = DataManagerSvc.GetData();
         var channel = data_journey.channels[marker_corners.uuid];
         var url = data_journey.markers[channel.marker].url;
 
         _image_debugger.DrawMatches(marker_corners, url);
       }
+      _marker_corners= marker_corners;
     }
 
     function UpdateBubbles() {
