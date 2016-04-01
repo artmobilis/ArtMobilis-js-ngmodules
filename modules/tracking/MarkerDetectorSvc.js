@@ -117,7 +117,6 @@
           var result = _marker_detector.OnNewImage(image);
           _marker = result.marker;
           _tags = result.tags;
-          _trained = _marker_detector.GetTrained();
         }
 
 
