@@ -47,25 +47,63 @@ angular.module('dataLoading')
     return ar;
   }
 
+  function InsertArrayToObject(obj, arr) {
+    if (arr) {
+      for (var i = 0, c = arr.length; i < c; ++i) {
+        var elem = arr[i];
+        obj[elem.uuid] = elem;
+      }
+    }
+  }
+
+  function ObjectsToJson(objects) {
+    var geometries = {};
+    var materials  = {};
+    var textures   = {};
+    var images     = {};
+
+    var object_jsons = [];
+
+    for (id in objects) {
+      var elem = objects[id];
+      var json = elem.toJSON();
+      InsertArrayToObject(geometries, json.geometries);
+      InsertArrayToObject(materials , json.materials );
+      InsertArrayToObject(textures  , json.textures  );
+      InsertArrayToObject(images    , json.images    );
+
+      object_jsons.push(json.object);
+    }
+
+    return {
+      objects:    object_jsons,
+      geometries: ObjectToArray(geometries),
+      materials:  ObjectToArray(materials),
+      textures:   ObjectToArray(textures),
+      images:     ObjectToArray(images)
+    };
+  }
+
   function toJSON() {
     return {
-      journey: this.journey,
-      pois: ObjectToArray(this.pois),
+      journey:  this.journey,
+      pois:     ObjectToArray(this.pois),
       channels: ObjectToArray(this.channels),
-      markers: ObjectToArray(this.markers),
-      contents: ObjectToArray(this.contents)
+      markers:  ObjectToArray(this.markers),
+      contents: ObjectToArray(this.contents),
+      objects:  ObjectsToJson(this.objects)
     }
   }
 
   function Create() {
     return {
-      journey: journeyFactory.Create(),
-      pois: {},
+      journey:  journeyFactory.Create(),
+      pois:     {},
       channels: {},
-      markers: {},
+      markers:  {},
       contents: {},
-      objects: {},
-      toJSON: toJSON
+      objects:  {},
+      toJSON:   toJSON
     }
   }
 
