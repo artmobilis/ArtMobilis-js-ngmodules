@@ -24,16 +24,18 @@ angular.module('dataLoading')
   * @property {value} contents[].uuid
   * @property {Point3D} contents[].position
   * @property {Point3D} contents[].rotation
-  * @property {number} contents[].scale
+  * @property {Point3D} contents[].scale
   */
 
 
-  function ClonePoint3D(point) {
-    point = point || {};
+  function ClonePoint3D(point, default_value) {
+    if (typeof point !== 'object') point = {};
+    if (typeof default_value !== 'number') default_value = 0;
+
     return {
-      x: point.x || 0,
-      y: point.y || 0,
-      z: point.z || 0
+      x: point.x || default_value,
+      y: point.y || default_value,
+      z: point.z || default_value
     };
   }
 
@@ -50,7 +52,7 @@ angular.module('dataLoading')
         name: content.name || 'unnamed content',
         position: ClonePoint3D(content.position),
         rotation: ClonePoint3D(content.rotation),
-        scale: content.scale || 1
+        scale: ClonePoint3D(content.scale, 1)
       };
 
       channel.contents.push(new_content);
