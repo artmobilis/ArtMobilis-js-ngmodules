@@ -40,6 +40,7 @@ function MarkerDetector() {
         trained_corners:_marker_tracker.GetTrainedCorners(), 
         screen_corners: _marker_tracker.GetScreenCorners(),
         matches: _marker_tracker.GetMatches(),
+        matches_mask: _marker_tracker.GetMatchesMask(),
         profiles: _marker_tracker.GetProfiler()
       };    
     }
