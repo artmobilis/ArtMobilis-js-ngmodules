@@ -29,7 +29,7 @@ function MarkerDetector() {
 
 
   function DetectMarkerImage(image_data) {
-    _marker_tracker.Log();
+    //_marker_tracker.Log();
 
     _marker_tracker.ComputeImage(image_data);
     if (_marker_tracker.Match()) {
