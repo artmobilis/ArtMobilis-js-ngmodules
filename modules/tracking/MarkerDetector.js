@@ -37,16 +37,18 @@ function MarkerDetector() {
         matched: true,
         uuid:    _marker_tracker.GetMatchUuid(),
         corners: _marker_tracker.GetPose(),
-        trained_corners:_marker_tracker.GetTrainedCorners(), 
+        trained_corners:_marker_tracker.GetTrainedCorners(),
         screen_corners: _marker_tracker.GetScreenCorners(),
         matches: _marker_tracker.GetMatches(),
         matches_mask: _marker_tracker.GetMatchesMask(),
-        profiles: _marker_tracker.GetProfiler()
-      };    
+        profiles: _marker_tracker.GetProfiler(),
+        image_data: image_data  // warning, put this object at the end or it crashes (webworker only pas stringable objects through Postmessages)
+     };    
     }
 
     return { 
       matched: false,
+      image_data: image_data,
       screen_corners: _marker_tracker.GetScreenCorners(),
       profiles: _marker_tracker.GetProfiler()
     };
