@@ -38,6 +38,17 @@ angular.module('dataLoading')
   ]
 
 
+  function ArraysEqual(a, b) {
+    if (a === b) return true;
+    if (a == null || b == null) return false;
+    if (a.length != b.length) return false;
+
+    for (var i = 0; i < a.length; ++i) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+
   function ObjectToArray(obj) {
     var ar = [];
 
@@ -56,31 +67,65 @@ angular.module('dataLoading')
     }
   }
 
+  function Concat(dst, src) {
+    for (key in src) {
+      dst[key] = src[key];
+    }
+  }
+
+  function DeleteMetadata(object) {
+    for (var key in object) {
+      delete object[key].metadata;
+    }
+  }
+
+  function TraverseObject3DArrayJson(array, fun) {
+    if (!array)
+      return;
+
+    for (var i = 0; i < array.length; ++i) {
+      fun(array[i]);
+      TraverseObject3DArrayJson(array[i].children, fun);
+    }
+  }
+
   function ObjectsToJson(objects) {
-    var geometries = {};
-    var materials  = {};
-    var textures   = {};
-    var images     = {};
+    var matrix4_identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
+    var meta = {
+      geometries: {},
+      materials : {},
+      textures  : {},
+      images    : {},
+      videos    : {}
+    }
 
     var object_jsons = [];
 
     for (id in objects) {
       var elem = objects[id];
-      var json = elem.toJSON();
-      InsertArrayToObject(geometries, json.geometries);
-      InsertArrayToObject(materials , json.materials );
-      InsertArrayToObject(textures  , json.textures  );
-      InsertArrayToObject(images    , json.images    );
+      var json = elem.toJSON(meta);
 
       object_jsons.push(json.object);
     }
 
+    TraverseObject3DArrayJson(object_jsons, function(object) {
+      if (ArraysEqual(object.matrix, matrix4_identity))
+        delete object.matrix;
+    });
+    DeleteMetadata(meta.geometries);
+    DeleteMetadata(meta.materials);
+    DeleteMetadata(meta.textures);
+    DeleteMetadata(meta.images);
+    DeleteMetadata(meta.videos);
+
     return {
       objects:    object_jsons,
-      geometries: ObjectToArray(geometries),
-      materials:  ObjectToArray(materials),
-      textures:   ObjectToArray(textures),
-      images:     ObjectToArray(images)
+      geometries: ObjectToArray(meta.geometries),
+      materials:  ObjectToArray(meta.materials),
+      textures:   ObjectToArray(meta.textures),
+      images:     ObjectToArray(meta.images),
+      videos:     ObjectToArray(meta.videos)
     };
   }
 
