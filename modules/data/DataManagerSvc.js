@@ -7,6 +7,20 @@ angular.module('data')
 
     var _data_journey = dataJourneyFactory.Create();
     var _load_promise = Promise.resolve();
+    var _event_manager = new AM.EventManager();
+    var _data_change_event_name = 'data_changed';
+
+    function AddListenerDataChange(fun) {
+      return _event_manager.AddListener(_data_change_event_name, fun);
+    }
+
+    function RemoveListenerDataChange(fun) {
+      return _event_manager.RemoveListener(_data_change_event_name, fun);
+    }
+
+    function OnDataChanged() {
+      return _event_manager.Fire(_data_change_event_name);
+    }
 
     function LoadData(url, type) {
       _load_promise = _load_promise.then(function() {
@@ -14,6 +28,7 @@ angular.module('data')
         return dataJourneyFactory.LoadData(url, type, _data_journey)
         .then(function(data_journey) {
           _data_journey = data_journey;
+          OnDataChanged();
         });
 
       });
@@ -27,6 +42,7 @@ angular.module('data')
         return dataJourneyFactory.ParseData(json, type, _data_journey)
         .then(function(data_journey) {
           _data_journey = data_journey;
+          OnDataChanged();
         });
 
       })
@@ -36,6 +52,7 @@ angular.module('data')
 
     function Clear() {
       _data_journey = dataJourneyFactory.Create();
+      OnDataChanged();
     }
 
     function GetData() {
@@ -43,12 +60,12 @@ angular.module('data')
     }
 
     function LoadPresets() {
-      LoadData(PATHS.JOURNEY, 'journey');
-      LoadData(PATHS.POIS, 'poi_array');
-      LoadData(PATHS.MARKERS, 'marker_array');
-      LoadData(PATHS.CONTENTS, 'content_array');
       LoadData(PATHS.OBJECTS, 'object_array');
+      LoadData(PATHS.CONTENTS, 'content_array');
+      LoadData(PATHS.MARKERS, 'marker_array');
       LoadData(PATHS.CHANNELS, 'channel_array');
+      LoadData(PATHS.POIS, 'poi_array');
+      LoadData(PATHS.JOURNEY, 'journey');
 
       return _load_promise;
     }
@@ -102,6 +119,8 @@ angular.module('data')
         if (typeof objects[content.object] === 'undefined')
           content.object = null;
       }
+
+      OnDataChanged();
     }
 
     this.LoadData = LoadData;
@@ -111,6 +130,8 @@ angular.module('data')
     this.LoadPresets = LoadPresets;
     this.GetLoadPromise = GetLoadPromise;
     this.CleanReferences = CleanReferences;
+    this.AddListenerDataChange = AddListenerDataChange;
+    this.RemoveListenerDataChange = RemoveListenerDataChange;
 
   }
 
