@@ -114,7 +114,7 @@
           }
         }
         else {
-          var result = _marker_detector.OnNewImage(image);
+          var result = _marker_detector.ComputeImage(image);
           _marker = result.marker;
           _tags = result.tags;
         }
