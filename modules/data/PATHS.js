@@ -1,3 +1,9 @@
+/**
+* deprecated, removed soon.
+* @memberOf angular_module.data
+*/
+
+
 angular.module('data')
 
 .constant('PATHS', (function() {
