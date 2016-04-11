@@ -24,7 +24,7 @@ angular.module('dataLoading')
 
         mesh.position.set(transform.position.x, transform.position.y, transform.position.z);
         mesh.rotation.set(transform.rotation.x, transform.rotation.y, transform.rotation.z);
-        mesh.scale.multiplyScalar(transform.scale);
+        mesh.scale.set(transform.scale.x, transform.scale.y, transform.scale.z);
 
         object.add(mesh);
       }
