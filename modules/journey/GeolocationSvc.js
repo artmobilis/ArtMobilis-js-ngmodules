@@ -1,3 +1,9 @@
+/**
+* A singleton that retrieve gps position and converts it to flat coordinates.
+* @class angular_module.journey.GeolocationSvc
+* @memberOf angular_module.journey
+*/
+
 angular.module('journey')
 
 .service('GeolocationSvc', function(CoordinatesConverterSvc) {

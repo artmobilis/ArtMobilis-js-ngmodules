@@ -1,3 +1,8 @@
+/**
+* @class angular_module.journey.GeolocationSvc
+* @memberOf angular_module.journey
+*/
+
 var JourneySceneSvc = (function() {
 
   DrawBubble = function(ctx, x, y, width, height, radius) {

@@ -1,3 +1,8 @@
+/**
+* @class angular_module.journey.GeolocationSvc
+* @memberOf angular_module.journey
+*/
+
 angular.module('journey')
 
 .service('JourneyManagerSvc', ['CoordinatesConverterSvc', 'GeolocationSvc', 'DataManagerSvc',
