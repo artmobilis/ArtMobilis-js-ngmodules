@@ -356,7 +356,7 @@ var JourneySceneSvc = (function() {
         var channel = data_journey.channels[marker_corners.uuid];
         var url = data_journey.markers[channel.marker].url;
 
-        _image_debugger.DrawMatches(marker_corners, url);
+        _image_debugger.DebugMatching(marker_corners, url);
       }
       _marker_corners= marker_corners;
     }
