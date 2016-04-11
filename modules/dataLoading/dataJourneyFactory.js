@@ -22,6 +22,11 @@ angular.module('dataLoading')
   * @property {Object.<THREE.Object3D>} objects
   */
 
+  /*
+  * A string, id of a data type
+  * @typedef {('data_journey'|'journey'|'poi'|'poi_array'|'channel'|'channel_array'|'marker'|'marker_array'|'content'|'content_array'|'object'|'object_array')} DataType
+  */
+
   var data_types = [
   'data_journey',
   'journey',
@@ -109,6 +114,7 @@ angular.module('dataLoading')
       object_jsons.push(json.object);
     }
 
+
     TraverseObject3DArrayJson(object_jsons, function(object) {
       if (ArraysEqual(object.matrix, matrix4_identity))
         delete object.matrix;
@@ -117,7 +123,6 @@ angular.module('dataLoading')
     DeleteMetadata(meta.materials);
     DeleteMetadata(meta.textures);
     DeleteMetadata(meta.images);
-    DeleteMetadata(meta.videos);
 
     return {
       objects:    object_jsons,
@@ -125,7 +130,13 @@ angular.module('dataLoading')
       materials:  ObjectToArray(meta.materials),
       textures:   ObjectToArray(meta.textures),
       images:     ObjectToArray(meta.images),
-      videos:     ObjectToArray(meta.videos)
+      videos:     ObjectToArray(meta.videos),
+      constants: {
+        image_path: AMTHREE.IMAGE_PATH,
+        model_path: AMTHREE.MODEL_PATH,
+        video_path: AMTHREE.VIDEO_PATH,
+        sound_path: AMTHREE.SOUND_PATH
+      }
     };
   }
 
@@ -136,7 +147,7 @@ angular.module('dataLoading')
       channels: ObjectToArray(this.channels),
       markers:  ObjectToArray(this.markers),
       contents: ObjectToArray(this.contents),
-      objects:  ObjectsToJson(this.objects)
+      objects:  ObjectsToJson(this.objects),
     }
   }
 
@@ -153,13 +164,15 @@ angular.module('dataLoading')
   }
 
   function Init(data_journey) {
-    data_journey = data_journey || {};
+    data_journey = data_journey || Create();
 
     if (!data_journey.pois)     data_journey.pois     = {};
     if (!data_journey.channels) data_journey.channels = {};
     if (!data_journey.markers)  data_journey.markers  = {};
     if (!data_journey.contents) data_journey.contents = {};
     if (!data_journey.objects)  data_journey.objects  = {};
+    if (!data_journey.journey)  data_journey.journey  = journeyFactory.Create();
+    if (!data_journey.toJSON)   data_journey.toJSON   = toJSON;
 
     return data_journey;
   }
@@ -256,7 +269,7 @@ angular.module('dataLoading')
     if (parser) {
       var promise = parser(json).then(function(data) {
 
-        insert_fctns[type](data, data_journey);
+        data_journey = insert_fctns[type](data, data_journey);
         return data_journey;
 
       })
