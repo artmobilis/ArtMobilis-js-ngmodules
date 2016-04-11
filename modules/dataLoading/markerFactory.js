@@ -16,6 +16,20 @@ angular.module('dataLoading')
    * @property {number} tag_id - 0 - 1023 - necessary if type == "tag"
    */
 
+  function GetFilename(path) {
+    if (path)
+      return path.split('/').pop().split('\\').pop();
+  }
+
+  function toJSON() {
+    return {
+      uuid: this.uuid,
+      name: this.name,
+      type: this.type,
+      url: GetFilename(this.url),
+      tag_id: this.tag_id
+    }
+  }
 
   function Create(id, name, type, url, tag_id) {
     if (typeof id === 'undefined')
@@ -26,7 +40,8 @@ angular.module('dataLoading')
       name: name || 'unnamed marker',
       type: type || 'img',
       url: url || '',
-      tag_id: tag_id
+      tag_id: tag_id,
+      toJSON: toJSON
     }
 
     return marker;
