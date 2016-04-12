@@ -26,7 +26,7 @@ angular.module('dataLoading')
       uuid: this.uuid,
       name: this.name,
       type: this.type,
-      url: GetFilename(this.url),
+      url: AMTHREE.ASSET_PATH + AMTHREE.IMAGE_PATH + GetFilename(this.url),
       tag_id: this.tag_id
     }
   }
