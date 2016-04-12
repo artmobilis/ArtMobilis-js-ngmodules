@@ -148,7 +148,7 @@ angular.module('dataLoading')
       channels: ObjectToArray(this.channels),
       markers:  ObjectToArray(this.markers),
       contents: ObjectToArray(this.contents),
-      objects:  ObjectsToJson(this.objects),
+      objects:  ObjectsToJson(this.objects)
     }
   }
 
