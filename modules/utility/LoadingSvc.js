@@ -48,4 +48,4 @@ angular.module('utility')
     _end_nbr = 0;
   }
   
-})
+});

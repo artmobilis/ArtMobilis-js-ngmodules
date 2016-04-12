@@ -1,1 +1,1 @@
-angular.module('tracking', [])
+angular.module('tracking', []);

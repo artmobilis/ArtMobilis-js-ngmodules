@@ -218,4 +218,4 @@ angular.module('journey')
   };
 
   
-}])
+}]);

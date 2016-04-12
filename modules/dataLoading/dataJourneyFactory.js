@@ -40,7 +40,7 @@ angular.module('dataLoading')
   'content_array',
   'object',
   'object_array'
-  ]
+  ];
 
 
   function ArraysEqual(a, b) {
@@ -103,7 +103,7 @@ angular.module('dataLoading')
       textures  : {},
       images    : {},
       videos    : {}
-    }
+    };
 
     var object_jsons = [];
 
@@ -149,7 +149,7 @@ angular.module('dataLoading')
       markers:  ObjectToArray(this.markers),
       contents: ObjectToArray(this.contents),
       objects:  ObjectsToJson(this.objects)
-    }
+    };
   }
 
   function Create() {
@@ -161,7 +161,7 @@ angular.module('dataLoading')
       contents: {},
       objects:  {},
       toJSON:   toJSON
-    }
+    };
   }
 
   function Init(data_journey) {
@@ -273,7 +273,7 @@ angular.module('dataLoading')
         data_journey = insert_fctns[type](data, data_journey);
         return data_journey;
 
-      })
+      });
       return promise;
     }
     else
@@ -342,4 +342,4 @@ angular.module('dataLoading')
   };
 
 
-}])
+}]);

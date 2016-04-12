@@ -92,7 +92,7 @@ angular.module('data')
           NotifyChange('data_journey');
         });
 
-      })
+      });
 
       return _load_promise;
     }
@@ -211,4 +211,4 @@ angular.module('data')
   return new DataManagerSvc();
 
 
-}])
+}]);

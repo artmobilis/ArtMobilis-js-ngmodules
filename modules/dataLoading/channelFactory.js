@@ -80,7 +80,7 @@ angular.module('dataLoading')
       name: name || 'unnamed channel',
       marker: marker,
       contents: []
-    }
+    };
 
     if (contents) {
       for (var i = 0, c = contents.length; i < c; ++i) {
@@ -157,4 +157,4 @@ angular.module('dataLoading')
   };
 
 
-}])
+}]);

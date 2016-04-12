@@ -13,4 +13,4 @@ angular.module('utility')
     var pos = _converter.GetLocalCoordinatesFromDegres(latitude, longitude);
     return pos;
   };
-}])
+}]);

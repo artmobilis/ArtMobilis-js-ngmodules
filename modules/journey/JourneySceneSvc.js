@@ -443,15 +443,12 @@ angular.module('journey')
       _scene.ResizeRenderer(width, height);
     }
 
-
     this.Start = Start;
     this.Started = Started;
     this.Stop = Stop;
     this.GetCanvas = GetCanvas;
     this.Update = Update;
     this.Resize = Resize;
-
-
   }
 
   return JourneySceneSvc;

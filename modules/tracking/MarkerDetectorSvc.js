@@ -73,7 +73,7 @@
               }
               break;
             }
-          }
+          };
         }
         else {
           _marker_detector = new MarkerDetector();
@@ -213,7 +213,7 @@
               _marker_detector.AddMarker(image_data, uuid);
             }
 
-          }
+          };
         }(url, uuid), true);
 
 
@@ -256,4 +256,4 @@
   .service('MarkerDetectorSvc', MarkerDetectorSvc);
 
 
-})()
+})();

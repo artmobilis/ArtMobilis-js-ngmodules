@@ -1,1 +1,1 @@
-angular.module('utility', [])
+angular.module('utility', []);

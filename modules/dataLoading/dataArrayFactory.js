@@ -56,4 +56,4 @@ angular.module('dataLoading')
     Parse: Parse,
     Load: Load
   };
-})
+});

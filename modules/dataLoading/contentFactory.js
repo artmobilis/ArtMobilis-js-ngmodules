@@ -33,7 +33,7 @@ angular.module('dataLoading')
       uuid: id,
       name: name || 'unnamed content',
       object: object
-    }
+    };
 
     return content;
   }
@@ -103,4 +103,4 @@ angular.module('dataLoading')
   };
 
 
-}])
+}]);

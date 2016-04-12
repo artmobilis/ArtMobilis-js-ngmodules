@@ -107,9 +107,9 @@ angular.module('data')
     };
 
 
-  }
+  };
 
   return Journey;
 
 
-})
+});
