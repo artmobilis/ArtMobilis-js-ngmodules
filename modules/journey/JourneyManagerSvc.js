@@ -1,3 +1,8 @@
+/**
+* @class angular_module.journey.GeolocationSvc
+* @memberOf angular_module.journey
+*/
+
 angular.module('journey')
 
 .service('JourneyManagerSvc', ['CoordinatesConverterSvc', 'GeolocationSvc', 'DataManagerSvc',
@@ -15,8 +20,6 @@ angular.module('journey')
   var _mode = this.MODE_NAVIGATION;
 
   var _running = false;
-
-  var _object_loader = new AMTHREE.ObjectLoader();
 
   function DispatchEventModeChange() {
     var event = new Event('journey_mode_change');

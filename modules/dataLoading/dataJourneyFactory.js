@@ -135,7 +135,8 @@ angular.module('dataLoading')
         image_path: AMTHREE.IMAGE_PATH,
         model_path: AMTHREE.MODEL_PATH,
         video_path: AMTHREE.VIDEO_PATH,
-        sound_path: AMTHREE.SOUND_PATH
+        sound_path: AMTHREE.SOUND_PATH,
+        asset_path: AMTHREE.ASSET_PATH
       }
     };
   }
@@ -147,7 +148,7 @@ angular.module('dataLoading')
       channels: ObjectToArray(this.channels),
       markers:  ObjectToArray(this.markers),
       contents: ObjectToArray(this.contents),
-      objects:  ObjectsToJson(this.objects),
+      objects:  ObjectsToJson(this.objects)
     };
   }
 

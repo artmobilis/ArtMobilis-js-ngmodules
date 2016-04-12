@@ -1,3 +1,10 @@
+/**
+* deprecated, removed soon.
+* @class Journey
+* @memberOf angular_module.data
+*/
+
+
 angular.module('data')
 
 .factory('Journey', function() {

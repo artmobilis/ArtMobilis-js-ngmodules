@@ -1,4 +1,22 @@
-var JourneySceneSvc = (function() {
+/**
+* @class angular_module.journey.GeolocationSvc
+* @memberOf angular_module.journey
+*/
+
+
+
+angular.module('journey')
+
+.service('JourneySceneSvc', [
+  'JourneyManagerSvc',
+  'DataManagerSvc',
+  'MarkerDetectorSvc',
+  'CameraSvc',
+  'LoadingSvc',
+  'objectFactory',
+  'CoordinatesConverterSvc',
+  'Journey',
+  (function() {
 
   DrawBubble = function(ctx, x, y, width, height, radius) {
     var x_min = x - (width / 2);
@@ -22,10 +40,16 @@ var JourneySceneSvc = (function() {
   };
 
 
-  return function($ionicPlatform, JourneyManagerSvc, DataManagerSvc,
-    MarkerDetectorSvc, CameraSvc, LoadingSvc, objectFactory,
-    CoordinatesConverterSvc, Journey) {
-    var that = this;
+  function JourneySceneSvc(
+    JourneyManagerSvc,
+    DataManagerSvc,
+    MarkerDetectorSvc,
+    CameraSvc,
+    LoadingSvc,
+    objectFactory,
+    CoordinatesConverterSvc,
+    Journey) {
+
 
     var _image_loader = new AM.ImageLoader();
     var _camera_video_element = CameraSvc.GetVideoElement();
@@ -44,7 +68,7 @@ var JourneySceneSvc = (function() {
         return CoordinatesConverterSvc.ConvertLocalCoordinates(latitude, longitude);
       },
       canvas: _canvas3d,
-      fov: (ionic.Platform.isWebView()) ? 80 : 40
+      fov: 60
     } );
     _scene.SetFullWindow();
     _scene.AddObject(new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 ));
@@ -184,22 +208,11 @@ var JourneySceneSvc = (function() {
     function LoadData() {
       LoadingSvc.Start();
       _loading_manager.Start();
-      DataManagerSvc.LoadPresets();
       return DataManagerSvc.GetLoadPromise().then(function() {
         AddPOILandmarks();
         LoadingSvc.End();
         _loading_manager.End();
       }, console.warn);
-    }
-
-    function LoadNavigationScene() {
-      _loading_manager.Start();
-      LoadingSvc.Start();
-
-      _scene.Load('./assets/navigation_scene.json', function() {
-        _loading_manager.End();
-        LoadingSvc.End();
-      });
     }
 
     function AddPOILandmarks() {
@@ -219,19 +232,14 @@ var JourneySceneSvc = (function() {
       _loading_manager.Start();
       LoadingSvc.Start();
 
-      $ionicPlatform.ready(function() {
+      StartCamera();
 
-        StartCamera();
+      LoadData();
 
-        LoadData();
+      StartMarkerDetector(use_web_worker);
 
-        StartMarkerDetector(use_web_worker);
-
-        LoadNavigationScene();
-
-        _loading_manager.End();
-        LoadingSvc.End();
-      });
+      _loading_manager.End();
+      LoadingSvc.End();
     }
 
     function OnDeviceMove(e) {
@@ -240,8 +248,8 @@ var JourneySceneSvc = (function() {
       body.position.z = e.detail.y;
     }
 
-    this.Start = function(use_web_worker) {
-      if (that.Started())
+    function Start(use_web_worker) {
+      if (Started())
         return;
 
       _starting_manager.Start();
@@ -268,14 +276,14 @@ var JourneySceneSvc = (function() {
         LoadingSvc.End();
         _starting_manager.End();
       });
-    };
+    }
 
-    this.Started = function() {
+    function Started() {
       return _running || _starting_manager.IsLoading();
-    };
+    }
 
-    this.Stop = function() {
-      if (!that.Started())
+    function Stop() {
+      if (!Started())
         return;
       
       _starting_manager.OnEnd(function() {
@@ -289,11 +297,11 @@ var JourneySceneSvc = (function() {
         MarkerDetectorSvc.Stop();
         CameraSvc.Stop();
       });
-    };
+    }
 
-    this.GetCanvas = function() {
+    function GetCanvas() {
       return _canvas2d;
-    };
+    }
 
     function OnCanvas(x, y, canvas) {
       return (0 <= x && x < canvas.width && 0 <= y && y < canvas.height);
@@ -409,7 +417,7 @@ var JourneySceneSvc = (function() {
       }
     }
 
-    this.Update = function() {
+    function Update() {
 
       _orientation_control.Update();
 
@@ -429,17 +437,20 @@ var JourneySceneSvc = (function() {
       UpdateDebugger();
 
       MarkerDetectorSvc.Empty();
-    };
+    }
 
+    function Resize(width, height) {
+      _scene.ResizeRenderer(width, height);
+    }
 
-  };
+    this.Start = Start;
+    this.Started = Started;
+    this.Stop = Stop;
+    this.GetCanvas = GetCanvas;
+    this.Update = Update;
+    this.Resize = Resize;
+  }
 
+  return JourneySceneSvc;
 
-})();
-
-angular.module('journey')
-
-.service('JourneySceneSvc', ['$ionicPlatform', 'JourneyManagerSvc', 'DataManagerSvc',
-  'MarkerDetectorSvc', 'CameraSvc', 'LoadingSvc', 'objectFactory',
-  'CoordinatesConverterSvc', 'Journey',
-  JourneySceneSvc]);
+})()]);

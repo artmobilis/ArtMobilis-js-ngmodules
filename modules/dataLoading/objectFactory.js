@@ -1,3 +1,9 @@
+/**
+* Collection of function to create THREE.Object3D instances.
+* @class objectFactory
+* @memberOf angular_module.dataLoading
+*/
+
 angular.module('dataLoading')
 
 .factory('objectFactory', [function() {
