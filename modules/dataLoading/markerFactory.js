@@ -28,7 +28,7 @@ angular.module('dataLoading')
       type: this.type,
       url: GetFilename(this.url),
       tag_id: this.tag_id
-    }
+    };
   }
 
   function Create(id, name, type, url, tag_id) {
@@ -42,7 +42,7 @@ angular.module('dataLoading')
       url: url || '',
       tag_id: tag_id,
       toJSON: toJSON
-    }
+    };
 
     return marker;
   }
@@ -87,4 +87,4 @@ angular.module('dataLoading')
   };
 
 
-}])
+}]);

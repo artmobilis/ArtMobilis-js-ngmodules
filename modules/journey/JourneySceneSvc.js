@@ -432,7 +432,7 @@ var JourneySceneSvc = (function() {
     };
 
 
-  }
+  };
 
 
 })();

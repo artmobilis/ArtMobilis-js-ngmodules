@@ -64,7 +64,7 @@ angular.module('dataLoading')
       longitude: this.longitude,
       radius: this.radius,
       channels: this.channels
-    }
+    };
   }
 
   function Create(id, name, latitude, longitude, radius, channels) {
@@ -79,7 +79,7 @@ angular.module('dataLoading')
       radius: radius || 10,
       channels: [],
       toJSON: toJSON
-    }
+    };
     poi.position = CoordinatesConverterSvc.ConvertLocalCoordinates(poi.latitude, poi.longitude);
 
     if (channels) {
@@ -108,7 +108,7 @@ angular.module('dataLoading')
         reject('failed to load POI: ' + url);
       });
 
-    })
+    });
   }
 
   function Parse(json) {
@@ -139,4 +139,4 @@ angular.module('dataLoading')
   };
 
 
-}])
+}]);

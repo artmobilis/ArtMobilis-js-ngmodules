@@ -38,6 +38,6 @@ angular.module('dataLoading')
       ParseArray: AMTHREE.ParseObjectArray,
       Load: AMTHREE.LoadObject,
       LoadArray: AMTHREE.LoadObjectArray
-    }
+    };
 
-}])
+}]);

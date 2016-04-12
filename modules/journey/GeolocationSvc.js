@@ -35,7 +35,7 @@ angular.module('journey')
       _on_watch();
       _on_watch = undefined;
     }
-    SetCoords(pos.coords.latitude, pos.coords.longitude)
+    SetCoords(pos.coords.latitude, pos.coords.longitude);
   }
 
   function OnError(e) {
@@ -103,4 +103,4 @@ angular.module('journey')
   };
 
 
-})
+});

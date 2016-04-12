@@ -13,7 +13,7 @@ function MarkerDetector() {
     active:                 CmdActive,
     enable_tag_detection:   CmdEnableTagDetection,
     enable_image_detection: CmdEnableImageDetection
-  }
+  };
 
   _marker_tracker.SetParameters({
     laplacian_threshold:   30,
@@ -73,7 +73,7 @@ function MarkerDetector() {
     return {
       tags: tags,
       marker: marker
-    }
+    };
   }
 
   function AddMarker(image_data, uuid) {

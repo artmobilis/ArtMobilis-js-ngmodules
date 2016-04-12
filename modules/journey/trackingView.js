@@ -28,7 +28,7 @@ angular.module('journey')
             _running = true;
             Loop();
           }
-        })
+        });
 
         _device_lock_screen.LockPortrait();
 
@@ -64,6 +64,6 @@ angular.module('journey')
         }
 
       }
-    }
+    };
   }
-])
+]);
