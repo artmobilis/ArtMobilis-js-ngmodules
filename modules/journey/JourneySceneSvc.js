@@ -27,7 +27,7 @@ var JourneySceneSvc = (function() {
   };
 
 
-  return function($ionicPlatform, JourneyManagerSvc, DataManagerSvc,
+  return function(JourneyManagerSvc, DataManagerSvc,
     MarkerDetectorSvc, CameraSvc, LoadingSvc, objectFactory,
     CoordinatesConverterSvc, Journey) {
     var that = this;
@@ -49,7 +49,7 @@ var JourneySceneSvc = (function() {
         return CoordinatesConverterSvc.ConvertLocalCoordinates(latitude, longitude);
       },
       canvas: _canvas3d,
-      fov: (ionic.Platform.isWebView()) ? 80 : 40
+      fov: 60
     } );
     _scene.SetFullWindow();
     _scene.AddObject(new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 ));
@@ -224,19 +224,16 @@ var JourneySceneSvc = (function() {
       _loading_manager.Start();
       LoadingSvc.Start();
 
-      $ionicPlatform.ready(function() {
+      StartCamera();
 
-        StartCamera();
+      LoadData();
 
-        LoadData();
+      StartMarkerDetector(use_web_worker);
 
-        StartMarkerDetector(use_web_worker);
+      LoadNavigationScene();
 
-        LoadNavigationScene();
-
-        _loading_manager.End();
-        LoadingSvc.End();
-      });
+      _loading_manager.End();
+      LoadingSvc.End();
     }
 
     function OnDeviceMove(e) {
@@ -444,7 +441,7 @@ var JourneySceneSvc = (function() {
 
 angular.module('journey')
 
-.service('JourneySceneSvc', ['$ionicPlatform', 'JourneyManagerSvc', 'DataManagerSvc',
+.service('JourneySceneSvc', ['JourneyManagerSvc', 'DataManagerSvc',
   'MarkerDetectorSvc', 'CameraSvc', 'LoadingSvc', 'objectFactory',
   'CoordinatesConverterSvc', 'Journey',
   JourneySceneSvc]);
