@@ -21,8 +21,6 @@ angular.module('journey')
 
   var _running = false;
 
-  var _object_loader = new AMTHREE.ObjectLoader();
-
   function DispatchEventModeChange() {
     var event = new Event('journey_mode_change');
     document.dispatchEvent(event);
