@@ -62,6 +62,39 @@ angular.module('dataLoading')
     }
   }
 
+  function Point3DIsDefault(point, value) {
+    if (typeof value === 'undefined')
+      value = 0;
+    return point.x === value && point.y === value && point.z === value;
+  }
+
+  function toJSON() {
+    var result = {
+      uuid: this.uuid,
+      name: this.name,
+      marker: this.marker,
+      contents: []
+    };
+
+    this.contents.forEach(function(elem) {
+      var clone = {
+        uuid: elem.uuid,
+        name: elem.name
+      };
+
+      if (!Point3DIsDefault(elem.position))
+        clone.position = elem.position;
+      if (!Point3DIsDefault(elem.rotation))
+        clone.rotation = elem.rotation;
+      if (!Point3DIsDefault(elem.scale, 1))
+        clone.scale = elem.scale;
+
+      result.contents.push(clone);
+    });
+
+    return result;
+  }
+
   /**
   * Creates a Channel
   * @memberOf angular_module.dataLoading.channelFactory
@@ -79,7 +112,8 @@ angular.module('dataLoading')
       uuid: id,
       name: name || 'unnamed channel',
       marker: marker,
-      contents: []
+      contents: [],
+      toJSON: toJSON
     };
 
     if (contents) {

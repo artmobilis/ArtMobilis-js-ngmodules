@@ -102,7 +102,8 @@ angular.module('dataLoading')
       materials : {},
       textures  : {},
       images    : {},
-      videos    : {}
+      videos    : {},
+      sounds    : {}
     };
 
     var object_jsons = [];
@@ -131,6 +132,7 @@ angular.module('dataLoading')
       textures:   ObjectToArray(meta.textures),
       images:     ObjectToArray(meta.images),
       videos:     ObjectToArray(meta.videos),
+      sounds:     ObjectToArray(meta.sounds),
       constants: {
         image_path: AMTHREE.IMAGE_PATH,
         model_path: AMTHREE.MODEL_PATH,
