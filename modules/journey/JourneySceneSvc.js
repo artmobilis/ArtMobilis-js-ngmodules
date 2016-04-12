@@ -208,22 +208,11 @@ angular.module('journey')
     function LoadData() {
       LoadingSvc.Start();
       _loading_manager.Start();
-      DataManagerSvc.LoadPresets();
       return DataManagerSvc.GetLoadPromise().then(function() {
         AddPOILandmarks();
         LoadingSvc.End();
         _loading_manager.End();
       }, console.warn);
-    }
-
-    function LoadNavigationScene() {
-      _loading_manager.Start();
-      LoadingSvc.Start();
-
-      _scene.Load('./assets/navigation_scene.json', function() {
-        _loading_manager.End();
-        LoadingSvc.End();
-      });
     }
 
     function AddPOILandmarks() {
@@ -248,8 +237,6 @@ angular.module('journey')
       LoadData();
 
       StartMarkerDetector(use_web_worker);
-
-      LoadNavigationScene();
 
       _loading_manager.End();
       LoadingSvc.End();
@@ -452,12 +439,17 @@ angular.module('journey')
       MarkerDetectorSvc.Empty();
     }
 
+    function Resize(width, height) {
+      _scene.ResizeRenderer(width, height);
+    }
+
 
     this.Start = Start;
     this.Started = Started;
     this.Stop = Stop;
     this.GetCanvas = GetCanvas;
     this.Update = Update;
+    this.Resize = Resize;
 
 
   }
