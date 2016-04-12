@@ -24,7 +24,7 @@ angular.module('dataLoading')
     var journey = {
       name: name || 'unnamed journey',
       pois: []
-    }
+    };
 
     if (pois) {
       for (var i = 0, c = pois.length; i < c; ++i) {
@@ -77,4 +77,4 @@ angular.module('dataLoading')
   };
 
 
-}])
+}]);

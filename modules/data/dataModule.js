@@ -1,1 +1,1 @@
-angular.module('data', ['dataLoading'])
+angular.module('data', ['dataLoading']);

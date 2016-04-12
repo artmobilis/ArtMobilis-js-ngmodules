@@ -20,4 +20,4 @@ angular.module('utility')
     return camera_grabbing.domElement;
   };
 
-})
+});
