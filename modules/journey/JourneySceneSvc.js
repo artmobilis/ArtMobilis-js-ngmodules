@@ -3,7 +3,20 @@
 * @memberOf angular_module.journey
 */
 
-var JourneySceneSvc = (function() {
+
+
+angular.module('journey')
+
+.service('JourneySceneSvc', [
+  'JourneyManagerSvc',
+  'DataManagerSvc',
+  'MarkerDetectorSvc',
+  'CameraSvc',
+  'LoadingSvc',
+  'objectFactory',
+  'CoordinatesConverterSvc',
+  'Journey',
+  (function() {
 
   DrawBubble = function(ctx, x, y, width, height, radius) {
     var x_min = x - (width / 2);
@@ -27,10 +40,16 @@ var JourneySceneSvc = (function() {
   };
 
 
-  return function(JourneyManagerSvc, DataManagerSvc,
-    MarkerDetectorSvc, CameraSvc, LoadingSvc, objectFactory,
-    CoordinatesConverterSvc, Journey) {
-    var that = this;
+  function JourneySceneSvc(
+    JourneyManagerSvc,
+    DataManagerSvc,
+    MarkerDetectorSvc,
+    CameraSvc,
+    LoadingSvc,
+    objectFactory,
+    CoordinatesConverterSvc,
+    Journey) {
+
 
     var _image_loader = new AM.ImageLoader();
     var _camera_video_element = CameraSvc.GetVideoElement();
@@ -242,8 +261,8 @@ var JourneySceneSvc = (function() {
       body.position.z = e.detail.y;
     }
 
-    this.Start = function(use_web_worker) {
-      if (that.Started())
+    function Start(use_web_worker) {
+      if (Started())
         return;
 
       _starting_manager.Start();
@@ -270,14 +289,14 @@ var JourneySceneSvc = (function() {
         LoadingSvc.End();
         _starting_manager.End();
       });
-    };
+    }
 
-    this.Started = function() {
+    function Started() {
       return _running || _starting_manager.IsLoading();
-    };
+    }
 
-    this.Stop = function() {
-      if (!that.Started())
+    function Stop() {
+      if (!Started())
         return;
       
       _starting_manager.OnEnd(function() {
@@ -291,11 +310,11 @@ var JourneySceneSvc = (function() {
         MarkerDetectorSvc.Stop();
         CameraSvc.Stop();
       });
-    };
+    }
 
-    this.GetCanvas = function() {
+    function GetCanvas() {
       return _canvas2d;
-    };
+    }
 
     function OnCanvas(x, y, canvas) {
       return (0 <= x && x < canvas.width && 0 <= y && y < canvas.height);
@@ -411,7 +430,7 @@ var JourneySceneSvc = (function() {
       }
     }
 
-    this.Update = function() {
+    function Update() {
 
       _orientation_control.Update();
 
@@ -431,17 +450,18 @@ var JourneySceneSvc = (function() {
       UpdateDebugger();
 
       MarkerDetectorSvc.Empty();
-    };
+    }
+
+
+    this.Start = Start;
+    this.Started = Started;
+    this.Stop = Stop;
+    this.GetCanvas = GetCanvas;
+    this.Update = Update;
 
 
   }
 
+  return JourneySceneSvc;
 
-})();
-
-angular.module('journey')
-
-.service('JourneySceneSvc', ['JourneyManagerSvc', 'DataManagerSvc',
-  'MarkerDetectorSvc', 'CameraSvc', 'LoadingSvc', 'objectFactory',
-  'CoordinatesConverterSvc', 'Journey',
-  JourneySceneSvc]);
+})()]);
