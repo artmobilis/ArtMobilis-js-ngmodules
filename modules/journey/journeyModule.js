@@ -3,4 +3,4 @@
 * @memberOf angular_module
 */
 
-angular.module('journey', ['ionic', 'data', 'tracking', 'utility'])
+angular.module('journey', ['data', 'tracking', 'utility'])
