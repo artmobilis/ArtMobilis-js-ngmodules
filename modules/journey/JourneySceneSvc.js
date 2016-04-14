@@ -443,12 +443,17 @@ angular.module('journey')
       _scene.ResizeRenderer(width, height);
     }
 
+    function GetCamera() {
+      return _scene.GetCameraBody();
+    }
+
     this.Start = Start;
     this.Started = Started;
     this.Stop = Stop;
     this.GetCanvas = GetCanvas;
     this.Update = Update;
     this.Resize = Resize;
+    this.GetCamera = GetCamera;
   }
 
   return JourneySceneSvc;
