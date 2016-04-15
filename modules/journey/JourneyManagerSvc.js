@@ -16,7 +16,6 @@ angular.module('journey')
   var _position = { x: 0, y: 0 };
 
   var _current_poi;
-  var _current_marker;
   var _mode = this.MODE_NAVIGATION;
 
   var _running = false;
@@ -107,13 +106,18 @@ angular.module('journey')
     SetMode();
   }
 
+  function OnDataChange() {
+    that.SetPoisPosition(DataManagerSvc.GetData().pois);
+    GoToNavigation();
+  }
+
   this.Reset = function() {
-    _mode = that.MODE_NAVIGATION;
+    GoToNavigation();
   };
 
   this.SetPoisPosition = function(pois) {
-    for (var i = 0, c = pois.length; i < c; ++i) {
-      var poi = pois[i];
+    for (var key in pois) {
+      var poi = pois[key];
       poi.position = CoordinatesConverterSvc.ConvertLocalCoordinates(poi.latitude, poi.longitude);
     }
   };
@@ -132,7 +136,9 @@ angular.module('journey')
   this.Start = function() {
     if (!_running) {
       _running = true;
+      that.SetPoisPosition(DataManagerSvc.GetData().pois);
       document.addEventListener('device_move_xy', OnDeviceMove, false);
+      DataManagerSvc.AddListenerDataChange(OnDataChange);
       _mode = that.MODE_NAVIGATION;
       GeolocationSvc.Start();
       DispatchEventModeChange();
@@ -142,6 +148,7 @@ angular.module('journey')
   this.Stop = function() {
     if (_running) {
       GeolocationSvc.Stop();
+      DataManagerSvc.RemoveListenerDataChange(OnDataChange);
       document.removeEventListener('device_move_xy', OnDeviceMove, false);
       _running = false;
     }
