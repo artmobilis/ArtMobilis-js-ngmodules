@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: dataLoading/markerFactory.js</title>
+    <title>JSDoc: Class: journey</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,107 +17,145 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: dataLoading/markerFactory.js</h1>
+    <h1 class="page-title">Class: journey</h1>
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @class markerFactory
- * @memberOf angular_module.dataLoading
- */
+        <h2>
+            <span class="ancestors"><a href="angular_module.html">angular_module</a>.</span>journey</h2>
+        
+    
+</header>
 
-angular.module('dataLoading')
+<article>
+    <div class="container-overview">
+    
+        
 
-.factory('markerFactory', ['dataArrayFactory', function(dataArrayFactory) {
+    
 
-  /**
-   * @typedef {object} Marker
-   * @property {value} uuid
-   * @property {string} name
-   * @property {string} type - 'img' or 'tag'
-   * @property {string} url - url of the image
-   * @property {number} tag_id - 0 - 1023 - necessary if type == "tag"
-   */
+    <h4 class="name" id="journey"><span class="type-signature"></span>new journey<span class="signature">()</span><span class="type-signature"></span></h4>
 
-  function GetFilename(path) {
-    if (path)
-      return path.split('/').pop().split('\\').pop();
-  }
-
-  function toJSON() {
-    return {
-      uuid: this.uuid,
-      name: this.name,
-      type: this.type,
-      url: AMTHREE.ASSET_PATH + AMTHREE.IMAGE_PATH + GetFilename(this.url),
-      tag_id: this.tag_id
-    };
-  }
-
-  function Create(id, name, type, url, tag_id) {
-    if (typeof id === 'undefined')
-      return;
-
-    var marker = {
-      uuid: id,
-      name: name || 'unnamed marker',
-      type: type || 'img',
-      url: url || '',
-      tag_id: tag_id,
-      toJSON: toJSON
-    };
-
-    return marker;
-  }
-
-  function Load(url) {
-    return new Promise(function(resolve, reject) {
-
-      var loader = new AM.JsonLoader();
-
-      loader.Load(url, function() {
-        Parse(loader.json).then(resolve, reject);
-      }, function() {
-        reject('failed to load marker: ' + url);
-      });
-
-    });
-  }
-
-  function Parse(json) {
-    return new Promise(function(resolve, reject) {
-      if (typeof json === 'object') {
-        var result = Create(json.uuid, json.name, json.type, json.url, json.tag_id);
-        if (result)
-          resolve(result);
-        else
-          reject('failed to create marker: id undefined');
-      }
-      else
-        reject('failed to parse marker json: not an object');
-    });
-  }
-
-  var LoadArray = function(url) { return dataArrayFactory.Load(url, Parse); };
-  var ParseArray = function(json) { return dataArrayFactory.Parse(json, Parse); };
-
-  return {
-    Create: Create,
-    Load: Load,
-    Parse: Parse,
-    LoadArray: LoadArray,
-    ParseArray: ParseArray
-  };
+    
 
 
-}]);</code></pre>
-        </article>
-    </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="journey_journeyModule.js.html">journey/journeyModule.js</a>, <a href="journey_journeyModule.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="angular_module.journey.GeolocationSvc.html">GeolocationSvc</a></dt>
+            <dd></dd>
+        
+            <dt><a href="angular_module.journey.JourneyManagerSvc.html">JourneyManagerSvc</a></dt>
+            <dd></dd>
+        
+            <dt><a href="angular_module.journey.JourneyRenderer.html">JourneyRenderer</a></dt>
+            <dd></dd>
+        
+            <dt><a href="angular_module.journey.JourneySceneSvc.html">JourneySceneSvc</a></dt>
+            <dd></dd>
+        
+            <dt><a href="angular_module.journey.trackingView.html">trackingView</a></dt>
+            <dd></dd>
+        </dl>
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: dataLoading/markerFactory.js</title>
+    <title>JSDoc: Source: data/Journey.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: dataLoading/markerFactory.js</h1>
+    <h1 class="page-title">Source: data/Journey.js</h1>
 
     
 
@@ -27,95 +27,121 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @class markerFactory
- * @memberOf angular_module.dataLoading
- */
+* deprecated, removed soon.
+* @class Journey
+* @memberOf angular_module.data
+*/
 
-angular.module('dataLoading')
 
-.factory('markerFactory', ['dataArrayFactory', function(dataArrayFactory) {
+angular.module('data')
 
-  /**
-   * @typedef {object} Marker
-   * @property {value} uuid
-   * @property {string} name
-   * @property {string} type - 'img' or 'tag'
-   * @property {string} url - url of the image
-   * @property {number} tag_id - 0 - 1023 - necessary if type == "tag"
-   */
+.factory('Journey', function() {
+  var Journey = function() {
+    var that = this;
 
-  function GetFilename(path) {
-    if (path)
-      return path.split('/').pop().split('\\').pop();
-  }
+    var _pois = [];
+    var _name = '';
 
-  function toJSON() {
-    return {
-      uuid: this.uuid,
-      name: this.name,
-      type: this.type,
-      url: AMTHREE.ASSET_PATH + AMTHREE.IMAGE_PATH + GetFilename(this.url),
-      tag_id: this.tag_id
-    };
-  }
+    var _loading = false;
+    var _on_load;
+    var _on_error;
 
-  function Create(id, name, type, url, tag_id) {
-    if (typeof id === 'undefined')
-      return;
+    var _root;
 
-    var marker = {
-      uuid: id,
-      name: name || 'unnamed marker',
-      type: type || 'img',
-      url: url || '',
-      tag_id: tag_id,
-      toJSON: toJSON
-    };
+    var _json_loader = new AM.JsonLoader();
 
-    return marker;
-  }
 
-  function Load(url) {
-    return new Promise(function(resolve, reject) {
+    this.Load = function(url, on_load, on_error) {
+      if (_loading) {
+        on_error('loading');
+        return;
+      }
 
+      _loading = true;
       var loader = new AM.JsonLoader();
 
       loader.Load(url, function() {
-        Parse(loader.json).then(resolve, reject);
+        _loading = false;
+        that.Parse(loader.json, on_load, on_error);
       }, function() {
-        reject('failed to load marker: ' + url);
+        _loading = false;
+        if (on_error) on_error(url);
+        if (on_load) on_load();
       });
+    };
 
-    });
-  }
+    function LoadFileRec(list) {
+      if (list.length !== 0) {
 
-  function Parse(json) {
-    return new Promise(function(resolve, reject) {
-      if (typeof json === 'object') {
-        var result = Create(json.uuid, json.name, json.type, json.url, json.tag_id);
-        if (result)
-          resolve(result);
-        else
-          reject('failed to create marker: id undefined');
+        var url = list.pop();
+
+        _json_loader.Load(_root + url, function() {
+
+          var json = _json_loader.json;
+          _pois.push( {
+            uuid: json.uuid,
+            name: json.name || 'unnamed',
+            latitude: json.latitude || 0,
+            longitude: json.longitude || 0,
+            radius: json.radius || 10,
+            channels: json.channels || [],
+            landmark: json.landmark
+          } );
+          LoadFileRec(list);
+
+        }, function() {
+
+          _on_error(url);
+          LoadFileRec(list);
+
+        });
       }
-      else
-        reject('failed to parse marker json: not an object');
-    });
-  }
+      else {
+        _loading = false;
+        if (_on_load) _on_load();
+      }
+    }
 
-  var LoadArray = function(url) { return dataArrayFactory.Load(url, Parse); };
-  var ParseArray = function(json) { return dataArrayFactory.Parse(json, Parse); };
+    this.Parse = function(json, on_load, on_error) {
+      if (_loading)
+        return;
 
-  return {
-    Create: Create,
-    Load: Load,
-    Parse: Parse,
-    LoadArray: LoadArray,
-    ParseArray: ParseArray
+      _loading = true;
+      _on_load = on_load;
+      _on_error = on_error;
+
+      _pois.length = 0;
+      _name = '';
+
+      if (json.name) _name = json.name;
+
+      _root = (json.POIs_root) ? json.POIs_root + '/' : '';
+
+      if (json.POIs) {
+       LoadFileRec(json.POIs);
+      }
+    };
+
+    this.GetName = function() {
+      return _name;
+    };
+
+    this.GetPOIs = function() {
+      return _pois;
+    };
+
+    this.IsLoading = function() {
+      return _loading;
+    };
+
+
   };
 
+  return Journey;
 
-}]);</code></pre>
+
+});
+</code></pre>
         </article>
     </section>
 

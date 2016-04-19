@@ -45,7 +45,7 @@ angular.module('dataLoading')
 
   function ArraysEqual(a, b) {
     if (a === b) return true;
-    if (a == null || b == null) return false;
+    if (a === null || b === null) return false;
     if (a.length != b.length) return false;
 
     for (var i = 0; i < a.length; ++i) {
@@ -57,7 +57,7 @@ angular.module('dataLoading')
   function ObjectToArray(obj) {
     var ar = [];
 
-    for (key in obj)
+    for (var key in obj)
       ar.push(obj[key]);
 
     return ar;
@@ -73,7 +73,7 @@ angular.module('dataLoading')
   }
 
   function Concat(dst, src) {
-    for (key in src) {
+    for (var key in src) {
       dst[key] = src[key];
     }
   }
@@ -108,7 +108,7 @@ angular.module('dataLoading')
 
     var object_jsons = [];
 
-    for (id in objects) {
+    for (var id in objects) {
       var elem = objects[id];
       var json = elem.toJSON(meta);
 

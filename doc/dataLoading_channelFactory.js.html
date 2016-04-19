@@ -52,16 +52,18 @@ angular.module('dataLoading')
   * @property {value} contents[].uuid
   * @property {Point3D} contents[].position
   * @property {Point3D} contents[].rotation
-  * @property {number} contents[].scale
+  * @property {Point3D} contents[].scale
   */
 
 
-  function ClonePoint3D(point) {
-    point = point || {};
+  function ClonePoint3D(point, default_value) {
+    if (typeof point !== 'object') point = {};
+    if (typeof default_value !== 'number') default_value = 0;
+
     return {
-      x: point.x || 0,
-      y: point.y || 0,
-      z: point.z || 0
+      x: point.x || default_value,
+      y: point.y || default_value,
+      z: point.z || default_value
     };
   }
 
@@ -78,7 +80,7 @@ angular.module('dataLoading')
         name: content.name || 'unnamed content',
         position: ClonePoint3D(content.position),
         rotation: ClonePoint3D(content.rotation),
-        scale: content.scale || 1
+        scale: ClonePoint3D(content.scale, 1)
       };
 
       channel.contents.push(new_content);
@@ -86,6 +88,39 @@ angular.module('dataLoading')
     else {
       console.log('failed to add content to channel ' + channel.uuid + ': uuid undefined');
     }
+  }
+
+  function Point3DIsDefault(point, value) {
+    if (typeof value === 'undefined')
+      value = 0;
+    return point.x === value &amp;&amp; point.y === value &amp;&amp; point.z === value;
+  }
+
+  function toJSON() {
+    var result = {
+      uuid: this.uuid,
+      name: this.name,
+      marker: this.marker,
+      contents: []
+    };
+
+    this.contents.forEach(function(elem) {
+      var clone = {
+        uuid: elem.uuid,
+        name: elem.name
+      };
+
+      if (!Point3DIsDefault(elem.position))
+        clone.position = elem.position;
+      if (!Point3DIsDefault(elem.rotation))
+        clone.rotation = elem.rotation;
+      if (!Point3DIsDefault(elem.scale, 1))
+        clone.scale = elem.scale;
+
+      result.contents.push(clone);
+    });
+
+    return result;
   }
 
   /**
@@ -105,8 +140,9 @@ angular.module('dataLoading')
       uuid: id,
       name: name || 'unnamed channel',
       marker: marker,
-      contents: []
-    }
+      contents: [],
+      toJSON: toJSON
+    };
 
     if (contents) {
       for (var i = 0, c = contents.length; i &lt; c; ++i) {
@@ -183,7 +219,7 @@ angular.module('dataLoading')
   };
 
 
-}])</code></pre>
+}]);</code></pre>
         </article>
     </section>
 
@@ -193,13 +229,13 @@ angular.module('dataLoading')
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="angular_module.dataLoading.html">dataLoading</a></li><li><a href="angular_module.dataLoading.channelFactory.html">channelFactory</a></li><li><a href="angular_module.dataLoading.contentFactory.html">contentFactory</a></li><li><a href="angular_module.dataLoading.dataArrayFactory.html">dataArrayFactory</a></li><li><a href="angular_module.dataLoading.dataJourneyFactory.html">dataJourneyFactory</a></li><li><a href="angular_module.dataLoading.journeyFactory.html">journeyFactory</a></li><li><a href="angular_module.dataLoading.markerFactory.html">markerFactory</a></li><li><a href="angular_module.dataLoading.poiFactory.html">poiFactory</a></li></ul><h3>Namespaces</h3><ul><li><a href="angular_module.html">angular_module</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="angular_module.data.html">data</a></li><li><a href="angular_module.data.DataManagerSvc.html">DataManagerSvc</a></li><li><a href="angular_module.data.Journey.html">Journey</a></li><li><a href="angular_module.dataLoading.html">dataLoading</a></li><li><a href="angular_module.dataLoading.channelFactory.html">channelFactory</a></li><li><a href="angular_module.dataLoading.contentFactory.html">contentFactory</a></li><li><a href="angular_module.dataLoading.dataArrayFactory.html">dataArrayFactory</a></li><li><a href="angular_module.dataLoading.dataJourneyFactory.html">dataJourneyFactory</a></li><li><a href="angular_module.dataLoading.journeyFactory.html">journeyFactory</a></li><li><a href="angular_module.dataLoading.markerFactory.html">markerFactory</a></li><li><a href="angular_module.dataLoading.objectFactory.html">objectFactory</a></li><li><a href="angular_module.dataLoading.poiFactory.html">poiFactory</a></li><li><a href="angular_module.journey.html">journey</a></li><li><a href="angular_module.journey.GeolocationSvc.html">GeolocationSvc</a></li><li><a href="angular_module.journey.JourneyManagerSvc.html">JourneyManagerSvc</a></li><li><a href="angular_module.journey.JourneyRenderer.html">JourneyRenderer</a></li><li><a href="angular_module.journey.JourneySceneSvc.html">JourneySceneSvc</a></li><li><a href="angular_module.journey.trackingView.html">trackingView</a></li></ul><h3>Namespaces</h3><ul><li><a href="angular_module.html">angular_module</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Mar 29 2016 12:09:09 GMT+0200 (Paris, Madrid (heure d’été))
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Apr 19 2016 16:34:32 GMT+0200 (Paris, Madrid (heure d’été))
 </footer>
 
 <script> prettyPrint(); </script>
