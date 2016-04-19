@@ -5,20 +5,16 @@
 
 angular.module('journey')
 
-.directive('trackingView', ['CameraSvc', 'JourneySceneSvc', 'JourneyRenderer',
-  function(CameraSvc, JourneySceneSvc, JourneyRenderer) {
+.directive('trackingView', ['JourneySceneSvc', 'JourneyRenderer',
+  function(JourneySceneSvc, JourneyRenderer) {
     return {
       restrict: 'E',
-      template: '<div/>',
       link: function(scope, element, attr) {
 
         var that = this;
 
         var _element = element[0];
-        var _div = element.children[0];
 
-        var _camera_video_element = CameraSvc.GetVideoElement();
-        var _camera_video_element_appended = false;
         var _scene;
 
         var _journey_renderer = new JourneyRenderer();
@@ -59,10 +55,6 @@ angular.module('journey')
           _destroyed = true;
           _journey_renderer.Stop();
           window.removeEventListener('resize', OnWindowResize);
-          if (_camera_video_element_appended) {
-            document.body.removeChild(_camera_video_element);
-            _camera_video_element_appended = false;
-          }
           if (_canvas_appended) {
             _element.removeChild(_canvas);
             _canvas_appended = false;
