@@ -36,9 +36,6 @@ angular.module('journey')
 
     var _journey;
 
-    // var _loading_manager = new AM.LoadingManager();
-    // var _starting_manager = new AM.LoadingManager();
-
     var _promise = Promise.resolve();
 
     var _scene = new THREE.Scene();
