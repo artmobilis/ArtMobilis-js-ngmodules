@@ -16,6 +16,13 @@
       JourneyManagerSvc,
       MarkerDetectorSvc) {
 
+
+    /**
+    * A class to render the CameraSvc and the JourneySceneSvc to a canvas
+    * @class angular_module.journey.JourneyRenderer
+    * @memberOf angular_module.journey
+    */
+
     function JourneyRenderer(width, height) {
 
       var _canvas3d = document.createElement('canvas');
@@ -41,6 +48,12 @@
       _image_debugger.SetData(_ctx2d, CameraSvc.GetVideoElement(), _debugMatches);
 
 
+      /**
+      * Resizes the renderer, the canvas, and the 3D camera.
+      * @memberOf angular_module.journey.JourneyRenderer
+      * @param {number} width
+      * @param {number} height
+      */
       function Resize(width, height) {
         width = width || _canvas3d.width;
         height = height || _canvas3d.height;
@@ -97,6 +110,10 @@
         }
       }
 
+      /**
+      * Renders to the canvas
+      * @memberOf angular_module.journey.JourneyRenderer
+      */
       function Render() {
         var user_head = JourneySceneSvc.GetUserHead();
         user_head.matrixWorld.decompose(_camera.position, _camera.quaternion, _camera.scale);
@@ -117,24 +134,47 @@
           RenderDebug();
       }
 
+      /**
+      * Sets the 3D camera's fov.
+      * @memberOf angular_module.journey.JourneyRenderer
+      * @param {number} fov
+      */
       function SetFov(fov) {
         _camera.fov = fov;
         _camera.updateProjectionMatrix();
       }
 
+      /**
+      * Enables and disables the debug mode.
+      * @memberOf angular_module.journey.JourneyRenderer
+      * @param {bool}
+      */
       function SetDebug(bool) {
         _debug_enabled = bool;
       }
 
+      /**
+      * Returns the inner canvas.
+      * @memberOf angular_module.journey.JourneyRenderer
+      * @returns {Canvas}
+      */
       function GetCanvas() {
         return _canvas2d;
       }
 
+      /**
+      * Adds event listeners.
+      * @memberOf angular_module.journey.JourneyRenderer
+      */
       function Start() {
         _camera_video_element.addEventListener('loadedmetadata', OnCamLoaded, false);
         OnCamLoaded();
       }
 
+      /**
+      * Removes event listeners.
+      * @memberOf angular_module.journey.JourneyRenderer
+      */
       function Stop() {
         _camera_video_element.removeEventListener('loadedmetadata', OnCamLoaded, false);
       }
