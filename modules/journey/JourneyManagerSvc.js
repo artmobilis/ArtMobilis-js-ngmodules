@@ -116,48 +116,48 @@ angular.module('journey')
   * Resets the service.
   * @memberOf angular_module.journey.JourneyManagerSvc
   */
-  this.Reset = function() {
+  function Reset() {
     GoToNavigation();
-  };
+  }
 
   /**
   * Computes the position of pois
   * @memberOf angular_module.journey.JourneyManagerSvc
   * @param {POI[]} pois
   */
-  this.SetPoisPosition = function(pois) {
+  function SetPoisPosition(pois) {
     for (var key in pois) {
       var poi = pois[key];
       poi.position = CoordinatesConverterSvc.ConvertLocalCoordinates(poi.latitude, poi.longitude);
     }
-  };
+  }
 
   /**
   * Returns the current state of the journey
   * @memberOf angular_module.journey.JourneyManagerSvc
   * @returns {JourneyManagerSvc.MODE_NAVIGATION | JourneyManagerSvc.MODE_POI | JourneyManagerSvc.MODE_NAVIGATION_FORCED}
   */
-  this.GetMode = function() {
+  function GetMode() {
     return _mode;
-  };
+  }
 
   /**
   * Returns the current POI if mode is MODE_POI, undefined otherwise.
   * @memberOf angular_module.journey.JourneyManagerSvc
   * @return {POI|undefined}
   */
-  this.GetCurrentPOI = function() {
+  function GetCurrentPOI() {
     if (_mode === that.MODE_POI || _mode === that.MODE_TRACKING) {
       return _current_poi;
     }
     return undefined;
-  };
+  }
 
   /**
   * Starts the geolocation service, add listeners, resets this.
   * @memberOf angular_module.journey.JourneyManagerSvc
   */
-  this.Start = function() {
+  function Start() {
     if (!_running) {
       _running = true;
       that.SetPoisPosition(DataManagerSvc.GetData().pois);
@@ -167,36 +167,36 @@ angular.module('journey')
       GeolocationSvc.Start();
       DispatchEventModeChange();
     }
-  };
+  }
 
   /**
   * Removes the listeners, stops this, and the geolocation service.
   * @memberOf angular_module.journey.JourneyManagerSvc
   */
-  this.Stop = function() {
+  function Stop() {
     if (_running) {
       GeolocationSvc.Stop();
       DataManagerSvc.RemoveListenerDataChange(OnDataChange);
       document.removeEventListener('device_move_xy', OnDeviceMove, false);
       _running = false;
     }
-  };
+  }
 
   /**
   * Returns true if the service is currently enabled.
   * @memberOf angular_module.journey.JourneyManagerSvc
   * @return {bool}
   */
-  this.Running = function() {
+  function Running() {
     return _running;
-  };
+  }
 
   /**
   * Returns a new object containing the landmarks of all the POIs.
   * @memberOf angular_module.journey.JourneyManagerSvc
   * @returns {THREE.Object3D}
   */
-  this.GetPOILandmarks = function() {
+  function GetPOILandmarks() {
     var object = new THREE.Object3D();
 
     var pois = DataManagerSvc.GetData().pois;
@@ -225,14 +225,14 @@ angular.module('journey')
     }
 
     return object;
-  };
+  }
 
   /**
   * Returns a new object containing the landmarks of the channels of the current POIs.
   * @memberOf angular_module.journey.JourneyManagerSvc
   * @returns {THREE.Object3D}
   */
-  this.GetPOIChannelsLandmarks = function() {
+  function GetPOIChannelsLandmarks() {
     var poi = _current_poi;
 
     var landmarks = new THREE.Object3D();
@@ -252,14 +252,14 @@ angular.module('journey')
     }
 
     return landmarks;
-  };
+  }
 
   /**
   * Enable or disable the mode JourneyManagerSvc.MODE_NAVIGATION_FORCED.
   * @memberOf angular_module.journey.JourneyManagerSvc
   * @param {bool} force_navigation
   */
-  this.ForceNavigationMode = function(force_navigation) {
+  function ForceNavigationMode(force_navigation) {
     if (!force_navigation) {
       if (_current_poi)
         GoToPOI(_current_poi);
@@ -270,7 +270,18 @@ angular.module('journey')
       if (_mode == that.MODE_POI)
         GoToNavigationForced();
     }
-  };
+  }
+  
+  this.Reset = Reset;
+  this.SetPoisPosition = SetPoisPosition;
+  this.GetMode = GetMode;
+  this.GetCurrentPOI = GetCurrentPOI;
+  this.Start = Start;
+  this.Stop = Stop;
+  this.Running = Running;
+  this.GetPOILandmarks = GetPOILandmarks;
+  this.GetPOIChannelsLandmarks = GetPOIChannelsLandmarks;
+  this.ForceNavigationMode = ForceNavigationMode;
 
   
 }]);
