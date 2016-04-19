@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: data/DataManagerSvc.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: data/DataManagerSvc.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* A singleton service that stores and manages the assets of the journey.
+* @class DataManagerSvc
+* @memberOf angular_module.data
+*/
+
+angular.module('data')
+
+.factory('DataManagerSvc', ['dataJourneyFactory', 'PATHS', function(dataJourneyFactory, PATHS) {
+
+  /*
+  * A string, id of an asset type
+  * @typedef {('data_journey'|'journey'|'poi'|'channel'|'marker'|'content'|'object')} AssetType
+  */
+
+  /*
+  * A string, id of a data type
+  * @typedef {('data_journey'|'journey'|'poi'|'poi_array'|'channel'|'channel_array'|'marker'|'marker_array'|'content'|'content_array'|'object'|'object_array')} DataType
+  */
+
+
+  function DataManagerSvc() {
+
+    var _data_journey = dataJourneyFactory.Create();
+    var _load_promise = Promise.resolve();
+    var _event_manager = new AM.EventManager();
+    var _data_change_event_name = 'data_changed';
+
+
+    /**
+    * Adds a listener to the event of a data change.
+    * @memberOf angular_module.data.DataManagerSvc
+    * @param {function} fun
+    */
+    function AddListenerDataChange(fun) {
+      return _event_manager.AddListener(_data_change_event_name, fun);
+    }
+
+    /**
+    * Removes a listener to the event of a data change.
+    * @memberOf angular_module.data.DataManagerSvc
+    * @param {function} fun
+    */
+    function RemoveListenerDataChange(fun) {
+      return _event_manager.RemoveListener(_data_change_event_name, fun);
+    }
+
+    /**
+    * Fires an event of a data change.
+    * @memberOf angular_module.data.DataManagerSvc
+    * @param {AssetType} [type] - 
+    * @param {string} [id] - If necessary, the id of the asset.
+    */
+    function NotifyChange(type, id) {
+      return _event_manager.Fire(_data_change_event_name, [type, id]);
+    }
+
+    /**
+    * Loads a data file
+    * @memberOf angular_module.data.DataManagerSvc
+    * @param {string} url
+    * @param {DataType} type
+    * @returns {Promise.&lt;undefined, string>}
+    */
+    function LoadData(url, type) {
+      _load_promise = _load_promise.then(function() {
+
+        return dataJourneyFactory.LoadData(url, type, _data_journey)
+        .then(function(data_journey) {
+          _data_journey = data_journey;
+          NotifyChange('data_journey');
+        });
+
+      });
+
+      return _load_promise;
+    }
+
+    /**
+    * Parses a data json
+    * @memberOf angular_module.data.DataManagerSvc
+    * @param {object} json
+    * @param {DataType} type
+    * @returns {Promise.&lt;undefined, string>}
+    */
+    function ParseData(json, type) {
+      _load_promise = _load_promise.then(function() {
+
+        return dataJourneyFactory.ParseData(json, type, _data_journey)
+        .then(function(data_journey) {
+          _data_journey = data_journey;
+          NotifyChange('data_journey');
+        });
+
+      });
+
+      return _load_promise;
+    }
+
+    /**
+    * Resets the data.
+    * @memberOf angular_module.data.DataManagerSvc
+    */
+    function Clear() {
+      _data_journey = dataJourneyFactory.Create();
+      NotifyChange('data_journey');
+    }
+
+    /**
+    * Returns the data.
+    * @memberOf angular_module.data.DataManagerSvc
+    * @returns {DataJourney}
+    */
+    function GetData() {
+      return _data_journey;
+    }
+
+    function LoadPresets() {
+      LoadData(PATHS.OBJECTS, 'object_array');
+      LoadData(PATHS.CONTENTS, 'content_array');
+      LoadData(PATHS.MARKERS, 'marker_array');
+      LoadData(PATHS.CHANNELS, 'channel_array');
+      LoadData(PATHS.POIS, 'poi_array');
+      LoadData(PATHS.JOURNEY, 'journey');
+
+      return _load_promise;
+    }
+
+    function GetLoadPromise() {
+      return _load_promise;
+    }
+
+    /**
+    * Removes references of objects no longer existing. Call this after removing an asset.
+    * @memberOf angular_module.data.DataManagerSvc
+    */
+    function CleanReferences() {
+      var journey = _data_journey.journey;
+      var pois = _data_journey.pois;
+      var channels = _data_journey.channels;
+      var markers = _data_journey.markers;
+      var contents = _data_journey.contents;
+      var objects = _data_journey.objects;
+
+      for (var i = 0; i &lt; journey.pois.length;) {
+        var poi_id = journey.pois[i];
+        if (typeof pois[poi_id] === 'undefined') {
+          journey.pois.splice(i, 1);
+          NotifyChange('journey');
+        }
+        else
+          ++i;
+      }
+
+      for (var poi_id in pois) {
+        var poi = pois[poi_id];
+        for (var i = 0; i &lt; poi.channels.length;) {
+          var channel_id = poi.channels[i].uuid;
+          if (typeof channels[channel_id] === 'undefined') {
+            poi.channels.splice(i, 1);
+            NotifyChange('poi', poi_id);
+          }
+          else
+            ++i;
+        }
+      }
+
+      for (var channel_id in channels) {
+        var channel = channels[channel_id];
+        var changed = false;
+        if (typeof markers[channel.marker] === 'undefined') {
+          channel.marker = null;
+          changed = true;
+        }
+        for (var i = 0; i &lt; channel.contents.length;) {
+          var content_id = channel.contents[i].uuid;
+          if (typeof contents[content_id] === 'undefined') {
+            channel.contents.splice(i, 1);
+            changed = true;
+          }
+          else
+            ++i;
+        }
+        if (changed)
+          NotifyChange('channel', channel_id);
+      }
+
+      for (var content_id in contents) {
+        var content = contents[content_id];
+        if (typeof objects[content.object] === 'undefined') {
+          content.object = null;
+          NotifyChange('content', content_id);
+        }
+      }
+    }
+
+    this.LoadData = LoadData;
+    this.ParseData = ParseData;
+    this.Clear = Clear;
+    this.GetData = GetData;
+    this.LoadPresets = LoadPresets;
+    this.GetLoadPromise = GetLoadPromise;
+    this.CleanReferences = CleanReferences;
+    this.AddListenerDataChange = AddListenerDataChange;
+    this.RemoveListenerDataChange = RemoveListenerDataChange;
+    this.NotifyChange = NotifyChange;
+
+  }
+
+
+  return new DataManagerSvc();
+
+
+}]);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="angular_module.data.html">data</a></li><li><a href="angular_module.data.DataManagerSvc.html">DataManagerSvc</a></li><li><a href="angular_module.data.Journey.html">Journey</a></li><li><a href="angular_module.dataLoading.html">dataLoading</a></li><li><a href="angular_module.dataLoading.channelFactory.html">channelFactory</a></li><li><a href="angular_module.dataLoading.contentFactory.html">contentFactory</a></li><li><a href="angular_module.dataLoading.dataArrayFactory.html">dataArrayFactory</a></li><li><a href="angular_module.dataLoading.dataJourneyFactory.html">dataJourneyFactory</a></li><li><a href="angular_module.dataLoading.journeyFactory.html">journeyFactory</a></li><li><a href="angular_module.dataLoading.markerFactory.html">markerFactory</a></li><li><a href="angular_module.dataLoading.objectFactory.html">objectFactory</a></li><li><a href="angular_module.dataLoading.poiFactory.html">poiFactory</a></li><li><a href="angular_module.journey.html">journey</a></li><li><a href="angular_module.journey.GeolocationSvc.html">GeolocationSvc</a></li><li><a href="angular_module.journey.JourneyManagerSvc.html">JourneyManagerSvc</a></li><li><a href="angular_module.journey.JourneyRenderer.html">JourneyRenderer</a></li><li><a href="angular_module.journey.JourneySceneSvc.html">JourneySceneSvc</a></li><li><a href="angular_module.journey.trackingView.html">trackingView</a></li></ul><h3>Namespaces</h3><ul><li><a href="angular_module.html">angular_module</a></li></ul><h3><a href="global.html">Global</a></h3>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Apr 19 2016 16:34:32 GMT+0200 (Paris, Madrid (heure d’été))
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

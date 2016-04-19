@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: dataLoading/markerFactory.js</title>
+    <title>JSDoc: Source: dataLoading/objectFactory.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: dataLoading/markerFactory.js</h1>
+    <h1 class="page-title">Source: dataLoading/objectFactory.js</h1>
 
     
 
@@ -27,93 +27,52 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @class markerFactory
- * @memberOf angular_module.dataLoading
- */
+* Collection of function to create THREE.Object3D instances.
+* @class objectFactory
+* @memberOf angular_module.dataLoading
+*/
 
 angular.module('dataLoading')
 
-.factory('markerFactory', ['dataArrayFactory', function(dataArrayFactory) {
+.factory('objectFactory', [function() {
 
-  /**
-   * @typedef {object} Marker
-   * @property {value} uuid
-   * @property {string} name
-   * @property {string} type - 'img' or 'tag'
-   * @property {string} url - url of the image
-   * @property {number} tag_id - 0 - 1023 - necessary if type == "tag"
-   */
+    function BuildChannelContents(channel_id, data) {
 
-  function GetFilename(path) {
-    if (path)
-      return path.split('/').pop().split('\\').pop();
-  }
+      var channel = data.channels[channel_id];
+      var contents_transforms = channel.contents;
 
-  function toJSON() {
-    return {
-      uuid: this.uuid,
-      name: this.name,
-      type: this.type,
-      url: AMTHREE.ASSET_PATH + AMTHREE.IMAGE_PATH + GetFilename(this.url),
-      tag_id: this.tag_id
-    };
-  }
+      var object = new THREE.Object3D();
 
-  function Create(id, name, type, url, tag_id) {
-    if (typeof id === 'undefined')
-      return;
+      for (var i = 0, c = contents_transforms.length; i &lt; c; ++i) {
+        var transform = contents_transforms[i];
 
-    var marker = {
-      uuid: id,
-      name: name || 'unnamed marker',
-      type: type || 'img',
-      url: url || '',
-      tag_id: tag_id,
-      toJSON: toJSON
-    };
+        var contents = data.contents[transform.uuid];
 
-    return marker;
-  }
+        if (typeof contents === 'undefined' || typeof contents.object === 'undefined')
+          continue;
+        var contents_mesh = data.objects[contents.object];
+        if (typeof contents_mesh === 'undefined')
+          continue;
 
-  function Load(url) {
-    return new Promise(function(resolve, reject) {
+        var mesh = contents_mesh.clone();
 
-      var loader = new AM.JsonLoader();
+        mesh.position.set(transform.position.x, transform.position.y, transform.position.z);
+        mesh.rotation.set(transform.rotation.x, transform.rotation.y, transform.rotation.z);
+        mesh.scale.set(transform.scale.x, transform.scale.y, transform.scale.z);
 
-      loader.Load(url, function() {
-        Parse(loader.json).then(resolve, reject);
-      }, function() {
-        reject('failed to load marker: ' + url);
-      });
-
-    });
-  }
-
-  function Parse(json) {
-    return new Promise(function(resolve, reject) {
-      if (typeof json === 'object') {
-        var result = Create(json.uuid, json.name, json.type, json.url, json.tag_id);
-        if (result)
-          resolve(result);
-        else
-          reject('failed to create marker: id undefined');
+        object.add(mesh);
       }
-      else
-        reject('failed to parse marker json: not an object');
-    });
-  }
 
-  var LoadArray = function(url) { return dataArrayFactory.Load(url, Parse); };
-  var ParseArray = function(json) { return dataArrayFactory.Parse(json, Parse); };
+      return object;
+    }
 
-  return {
-    Create: Create,
-    Load: Load,
-    Parse: Parse,
-    LoadArray: LoadArray,
-    ParseArray: ParseArray
-  };
-
+    return {
+      BuildChannelContents: BuildChannelContents,
+      Parse: AMTHREE.ParseObject,
+      ParseArray: AMTHREE.ParseObjectArray,
+      Load: AMTHREE.LoadObject,
+      LoadArray: AMTHREE.LoadObjectArray
+    };
 
 }]);</code></pre>
         </article>

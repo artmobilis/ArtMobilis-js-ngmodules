@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: dataLoading/markerFactory.js</title>
+    <title>JSDoc: Source: journey/trackingView.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: dataLoading/markerFactory.js</h1>
+    <h1 class="page-title">Source: journey/trackingView.js</h1>
 
     
 
@@ -27,95 +27,84 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @class markerFactory
- * @memberOf angular_module.dataLoading
- */
+* @class angular_module.journey.trackingView
+* @memberOf angular_module.journey
+*/
 
-angular.module('dataLoading')
+angular.module('journey')
 
-.factory('markerFactory', ['dataArrayFactory', function(dataArrayFactory) {
-
-  /**
-   * @typedef {object} Marker
-   * @property {value} uuid
-   * @property {string} name
-   * @property {string} type - 'img' or 'tag'
-   * @property {string} url - url of the image
-   * @property {number} tag_id - 0 - 1023 - necessary if type == "tag"
-   */
-
-  function GetFilename(path) {
-    if (path)
-      return path.split('/').pop().split('\\').pop();
-  }
-
-  function toJSON() {
+.directive('trackingView', ['JourneySceneSvc', 'JourneyRenderer',
+  function(JourneySceneSvc, JourneyRenderer) {
     return {
-      uuid: this.uuid,
-      name: this.name,
-      type: this.type,
-      url: AMTHREE.ASSET_PATH + AMTHREE.IMAGE_PATH + GetFilename(this.url),
-      tag_id: this.tag_id
-    };
-  }
+      restrict: 'E',
+      link: function(scope, element, attr) {
 
-  function Create(id, name, type, url, tag_id) {
-    if (typeof id === 'undefined')
-      return;
+        var that = this;
 
-    var marker = {
-      uuid: id,
-      name: name || 'unnamed marker',
-      type: type || 'img',
-      url: url || '',
-      tag_id: tag_id,
-      toJSON: toJSON
-    };
+        var _element = element[0];
 
-    return marker;
-  }
+        var _scene;
 
-  function Load(url) {
-    return new Promise(function(resolve, reject) {
+        var _journey_renderer = new JourneyRenderer();
 
-      var loader = new AM.JsonLoader();
+        var _canvas = _journey_renderer.GetCanvas();
+        var _canvas_appended = false;
 
-      loader.Load(url, function() {
-        Parse(loader.json).then(resolve, reject);
-      }, function() {
-        reject('failed to load marker: ' + url);
-      });
+        var _device_lock_screen = new AM.DeviceLockScreenOrientation();
 
-    });
-  }
+        var _running = false;
+        var _destroyed = false;
 
-  function Parse(json) {
-    return new Promise(function(resolve, reject) {
-      if (typeof json === 'object') {
-        var result = Create(json.uuid, json.name, json.type, json.url, json.tag_id);
-        if (result)
-          resolve(result);
-        else
-          reject('failed to create marker: id undefined');
+
+        function OnWindowResize() {
+          _journey_renderer.Resize(window.innerWidth, window.innerHeight);
+        }
+
+        attr.$observe('run', function(run) {
+          if (run === 'true' &amp;&amp; !_running) {
+            _running = true;
+            _journey_renderer.Start();
+            Loop();
+          }
+        });
+
+        _device_lock_screen.LockPortrait();
+
+
+        _element.appendChild(_canvas);
+        _canvas_appended = true;
+
+        window.addEventListener('resize', OnWindowResize);
+        OnWindowResize();
+
+
+        scope.$on('$destroy', function() {
+          _running = false;
+          _destroyed = true;
+          _journey_renderer.Stop();
+          window.removeEventListener('resize', OnWindowResize);
+          if (_canvas_appended) {
+            _element.removeChild(_canvas);
+            _canvas_appended = false;
+          }
+          _device_lock_screen.Unlock();
+        });
+
+
+        function Loop() {
+          if (_running &amp;&amp; !_destroyed) {
+            window.requestAnimationFrame(Loop);
+            if (JourneySceneSvc.Started()) {
+              JourneySceneSvc.Update();
+              _journey_renderer.Render();
+            }
+          }
+        }
+
       }
-      else
-        reject('failed to parse marker json: not an object');
-    });
+    };
   }
-
-  var LoadArray = function(url) { return dataArrayFactory.Load(url, Parse); };
-  var ParseArray = function(json) { return dataArrayFactory.Parse(json, Parse); };
-
-  return {
-    Create: Create,
-    Load: Load,
-    Parse: Parse,
-    LoadArray: LoadArray,
-    ParseArray: ParseArray
-  };
-
-
-}]);</code></pre>
+]);</code></pre>
         </article>
     </section>
 
