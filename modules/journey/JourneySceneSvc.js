@@ -1,5 +1,5 @@
 /**
-* @class angular_module.journey.GeolocationSvc
+* @class angular_module.journey.JourneySceneSvc
 * @memberOf angular_module.journey
 */
 

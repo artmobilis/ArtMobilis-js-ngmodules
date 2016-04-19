@@ -1,5 +1,5 @@
 /**
-* @class angular_module.journey.GeolocationSvc
+* @class angular_module.journey.trackingView
 * @memberOf angular_module.journey
 */
 

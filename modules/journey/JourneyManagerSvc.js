@@ -1,5 +1,6 @@
 /**
-* @class angular_module.journey.GeolocationSvc
+* A singleton service that computes the current state of the journey
+* @class angular_module.journey.JourneyManagerSvc
 * @memberOf angular_module.journey
 */
 
@@ -111,10 +112,19 @@ angular.module('journey')
     GoToNavigation();
   }
 
+  /**
+  * Resets the service.
+  * @memberOf angular_module.journey.JourneyManagerSvc
+  */
   this.Reset = function() {
     GoToNavigation();
   };
 
+  /**
+  * Computes the position of pois
+  * @memberOf angular_module.journey.JourneyManagerSvc
+  * @param {POI[]} pois
+  */
   this.SetPoisPosition = function(pois) {
     for (var key in pois) {
       var poi = pois[key];
@@ -122,10 +132,20 @@ angular.module('journey')
     }
   };
 
+  /**
+  * Returns the current state of the journey
+  * @memberOf angular_module.journey.JourneyManagerSvc
+  * @returns {JourneyManagerSvc.MODE_NAVIGATION | JourneyManagerSvc.MODE_POI | JourneyManagerSvc.MODE_NAVIGATION_FORCED}
+  */
   this.GetMode = function() {
     return _mode;
   };
 
+  /**
+  * Returns the current POI if mode is MODE_POI, undefined otherwise.
+  * @memberOf angular_module.journey.JourneyManagerSvc
+  * @return {POI|undefined}
+  */
   this.GetCurrentPOI = function() {
     if (_mode === that.MODE_POI || _mode === that.MODE_TRACKING) {
       return _current_poi;
@@ -133,6 +153,10 @@ angular.module('journey')
     return undefined;
   };
 
+  /**
+  * Starts the geolocation service, add listeners, resets this.
+  * @memberOf angular_module.journey.JourneyManagerSvc
+  */
   this.Start = function() {
     if (!_running) {
       _running = true;
@@ -145,6 +169,10 @@ angular.module('journey')
     }
   };
 
+  /**
+  * Removes the listeners, stops this, and the geolocation service.
+  * @memberOf angular_module.journey.JourneyManagerSvc
+  */
   this.Stop = function() {
     if (_running) {
       GeolocationSvc.Stop();
@@ -154,10 +182,20 @@ angular.module('journey')
     }
   };
 
+  /**
+  * Returns true if the service is currently enabled.
+  * @memberOf angular_module.journey.JourneyManagerSvc
+  * @return {bool}
+  */
   this.Running = function() {
     return _running;
   };
 
+  /**
+  * Returns a new object containing the landmarks of all the POIs.
+  * @memberOf angular_module.journey.JourneyManagerSvc
+  * @returns {THREE.Object3D}
+  */
   this.GetPOILandmarks = function() {
     var object = new THREE.Object3D();
 
@@ -189,6 +227,11 @@ angular.module('journey')
     return object;
   };
 
+  /**
+  * Returns a new object containing the landmarks of the channels of the current POIs.
+  * @memberOf angular_module.journey.JourneyManagerSvc
+  * @returns {THREE.Object3D}
+  */
   this.GetPOIChannelsLandmarks = function() {
     var poi = _current_poi;
 
@@ -211,6 +254,11 @@ angular.module('journey')
     return landmarks;
   };
 
+  /**
+  * Enable or disable the mode JourneyManagerSvc.MODE_NAVIGATION_FORCED.
+  * @memberOf angular_module.journey.JourneyManagerSvc
+  * @param {bool} force_navigation
+  */
   this.ForceNavigationMode = function(force_navigation) {
     if (!force_navigation) {
       if (_current_poi)

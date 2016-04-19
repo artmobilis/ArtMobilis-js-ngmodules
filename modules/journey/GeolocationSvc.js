@@ -1,5 +1,5 @@
 /**
-* A singleton that retrieve gps position and converts it to flat coordinates.
+* A singleton service that retrieves gps position and converts it to flat coordinates.
 * @class angular_module.journey.GeolocationSvc
 * @memberOf angular_module.journey
 */
@@ -63,6 +63,11 @@ angular.module('journey')
   }
 
 
+  /**
+  * Adds the listener.
+  * @param {function} on_watch
+  * @param {function} on_error
+  */
   this.Start = function(on_watch, on_error) {
     if (!_watching && !_loading) {
       _on_watch = on_watch;
@@ -79,6 +84,9 @@ angular.module('journey')
     }
   };
 
+  /**
+  * Removes the listener.
+  */
   this.Stop = function() {
     if (_watching) {
       navigator.geolocation.clearWatch(_watch_id);
@@ -86,22 +94,44 @@ angular.module('journey')
     }
   };
 
+  /**
+  * Returns the gps coordinates converted to flat coordinates.
+  * @returns {Object.<x, y>}
+  */
   this.GetPosition = function() {
     return { x: _position.x, y: _position.y };
   };
 
+  /**
+  * Returns true if the geolocation is loading.
+  * @returns {bool}
+  */
   this.IsLoading = function() {
     return _loading;
   };
 
+  /**
+  * Returns true if the geolocation has started.
+  * @returns {bool}
+  */
   this.IsWatching = function() {
     return _watching;
   };
 
+  /**
+  * Sets the internal coordinates and fires the 'device_move_xy' event
+  * @param {number} latitude - in degrees
+  * @param {number} longitude - in degrees
+  */
   this.SimulateNewCoords = function(latitude, longitude) {
     SetCoords(latitude, longitude);
   };
 
+  /**
+  * Sets the internal coordinates and fires the 'device_move_xy' event
+  * @param {number} x
+  * @param {number} y
+  */
   this.SimulateNewPosition = function(x, y) {
     _position.x = x;
     _position.y = y;
