@@ -81,10 +81,6 @@
       }
 
       // _worker.postMessage( { cmd: 'enable_tag_detection', value: false } );
-
-      document.body.onkeydown = function() {
-        _enabled = !_enabled;
-      };
     };
 
     this.Update = function() {

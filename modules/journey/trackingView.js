@@ -5,8 +5,8 @@
 
 angular.module('journey')
 
-.directive('trackingView', ['CameraSvc', 'JourneySceneSvc',
-  function(CameraSvc, JourneySceneSvc) {
+.directive('trackingView', ['CameraSvc', 'JourneySceneSvc', 'JourneyRenderer',
+  function(CameraSvc, JourneySceneSvc, JourneyRenderer) {
     return {
       restrict: 'E',
       template: '<div/>',
@@ -14,12 +14,16 @@ angular.module('journey')
 
         var that = this;
 
+        var _element = element[0];
         var _div = element.children[0];
 
         var _camera_video_element = CameraSvc.GetVideoElement();
         var _camera_video_element_appended = false;
         var _scene;
-        var _canvas = JourneySceneSvc.GetCanvas();
+
+        var _journey_renderer = new JourneyRenderer();
+
+        var _canvas = _journey_renderer.GetCanvas();
         var _canvas_appended = false;
 
         var _device_lock_screen = new AM.DeviceLockScreenOrientation();
@@ -28,9 +32,14 @@ angular.module('journey')
         var _destroyed = false;
 
 
+        function OnWindowResize() {
+          _journey_renderer.Resize(window.innerWidth, window.innerHeight);
+        }
+
         attr.$observe('run', function(run) {
           if (run === 'true' && !_running) {
             _running = true;
+            _journey_renderer.Start();
             Loop();
           }
         });
@@ -38,22 +47,27 @@ angular.module('journey')
         _device_lock_screen.LockPortrait();
 
 
-        document.body.appendChild(_canvas);
+        _element.appendChild(_canvas);
         _canvas_appended = true;
 
-        document.body.appendChild(_camera_video_element);
-        _camera_video_element_appended = true;
+        // document.body.appendChild(_camera_video_element);
+        // _camera_video_element_appended = true;
+
+        window.addEventListener('resize', OnWindowResize);
+        OnWindowResize();
 
 
         scope.$on('$destroy', function() {
           _running = false;
           _destroyed = true;
+          _journey_renderer.Stop();
+          window.removeEventListener('resize', OnWindowResize);
           if (_camera_video_element_appended) {
             document.body.removeChild(_camera_video_element);
             _camera_video_element_appended = false;
           }
           if (_canvas_appended) {
-            document.body.removeChild(_canvas);
+            _element.removeChild(_canvas);
             _canvas_appended = false;
           }
           _device_lock_screen.Unlock();
@@ -63,8 +77,10 @@ angular.module('journey')
         function Loop() {
           if (_running && !_destroyed) {
             window.requestAnimationFrame(Loop);
-            if (JourneySceneSvc.Started())
+            if (JourneySceneSvc.Started()) {
               JourneySceneSvc.Update();
+              _journey_renderer.Render();
+            }
           }
         }
 
