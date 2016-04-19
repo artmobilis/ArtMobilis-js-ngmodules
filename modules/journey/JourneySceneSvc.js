@@ -14,7 +14,6 @@ angular.module('journey')
   'CameraSvc',
   'LoadingSvc',
   'objectFactory',
-  'Journey',
   (function() {
 
 
@@ -24,8 +23,7 @@ angular.module('journey')
     MarkerDetectorSvc,
     CameraSvc,
     LoadingSvc,
-    objectFactory,
-    Journey) {
+    objectFactory) {
 
 
     var _image_loader = new AM.ImageLoader();
