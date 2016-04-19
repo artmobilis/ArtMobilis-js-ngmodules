@@ -160,7 +160,7 @@ angular.module('journey')
   function Start() {
     if (!_running) {
       _running = true;
-      that.SetPoisPosition(DataManagerSvc.GetData().pois);
+      SetPoisPosition(DataManagerSvc.GetData().pois);
       document.addEventListener('device_move_xy', OnDeviceMove, false);
       DataManagerSvc.AddListenerDataChange(OnDataChange);
       _mode = that.MODE_NAVIGATION;
@@ -271,7 +271,7 @@ angular.module('journey')
         GoToNavigationForced();
     }
   }
-  
+
   this.Reset = Reset;
   this.SetPoisPosition = SetPoisPosition;
   this.GetMode = GetMode;
