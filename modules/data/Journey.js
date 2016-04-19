@@ -43,7 +43,7 @@ angular.module('data')
     };
 
     function LoadFileRec(list) {
-      if (list.length != 0) {
+      if (list.length !== 0) {
 
         var url = list.pop();
 

@@ -152,7 +152,7 @@ angular.module('data')
           ++i;
       }
 
-      for (poi_id in pois) {
+      for (var poi_id in pois) {
         var poi = pois[poi_id];
         for (var i = 0; i < poi.channels.length;) {
           var channel_id = poi.channels[i].uuid;
@@ -165,7 +165,7 @@ angular.module('data')
         }
       }
 
-      for (channel_id in channels) {
+      for (var channel_id in channels) {
         var channel = channels[channel_id];
         var changed = false;
         if (typeof markers[channel.marker] === 'undefined') {
@@ -185,7 +185,7 @@ angular.module('data')
           NotifyChange('channel', channel_id);
       }
 
-      for (content_id in contents) {
+      for (var content_id in contents) {
         var content = contents[content_id];
         if (typeof objects[content.object] === 'undefined') {
           content.object = null;

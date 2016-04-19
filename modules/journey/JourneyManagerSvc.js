@@ -48,7 +48,8 @@ angular.module('journey')
   }
 
   function FindEnteringPOI(journey, pois) {
-    for (poi_id of journey.pois) {
+    for (var i = 0, c = journey.pois.length; i < c; ++i) {
+      var poi_id = journey.pois[i];
       var poi = pois[poi_id];
       if (!poi) continue;
 
@@ -202,7 +203,7 @@ angular.module('journey')
     var pois = DataManagerSvc.GetData().pois;
     var objects = DataManagerSvc.GetData().objects;
 
-    for (poi_id in pois) {
+    for (var poi_id in pois) {
       var poi = pois[poi_id];
 
       if (poi.landmark) {
@@ -238,7 +239,8 @@ angular.module('journey')
     var landmarks = new THREE.Object3D();
     var objects = DataManagerSvc.GetData().objects;
 
-    for (channel of poi.channels) {
+    for (var i = 0, c = poi.channels.length; i < c; ++i) {
+      var channel = poi.channels[i];
       var obj = objects[channel.object];
       if (typeof obj !== 'undefined') {
         obj = obj.clone();

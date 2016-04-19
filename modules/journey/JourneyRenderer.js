@@ -205,7 +205,8 @@
 
       cam_pos.setFromMatrixPosition(camera.matrixWorld);
 
-      for (var poi_id of journey.pois) {
+      for (var i = 0, c = journey.pois.length; i < c; ++i) {
+        var poi_id = journey.pois[i];
         var poi = pois[poi_id];
         if (!poi) continue;
 
@@ -268,7 +269,7 @@
     ctx.quadraticCurveTo(x_min, y_min, x_min, y_min + radius);
 
     ctx.fill();
-  };
+  }
 
 
 })();

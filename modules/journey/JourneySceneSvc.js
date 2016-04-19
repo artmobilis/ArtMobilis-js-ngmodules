@@ -65,44 +65,54 @@ angular.module('journey')
     var _channels_landmarks;
 
 
-    function AddPOIMarkers() {
+    var AddPOIMarkers = (function() {
 
-      var poi = JourneyManagerSvc.GetCurrentPOI();
-      if (!poi)
-        return;
-
-      var data_journey = DataManagerSvc.GetData();
-      var channels = data_journey.channels;
-      var markers = data_journey.markers;
-
-      for (poi_channel of poi.channels) {
-        var channel_uuid = poi_channel.uuid;
-        var channel = channels[channel_uuid];
-        var marker = markers[channel.marker];
-
-        if (marker.type === 'img')
-          MarkerDetectorSvc.AddMarker(marker.url, channel_uuid);
-
-        var object = objectFactory.BuildChannelContents(channel_uuid, DataManagerSvc.GetData());
-
-        (function(channel_uuid) {
-          _tracked_obj_manager.Add(object, channel_uuid, function(o) {
-            AMTHREE.PlayAnimatedTextures(o);
-            AMTHREE.PlaySounds(o);
-            _scene.add(o);
-            MarkerDetectorSvc.ActiveAllMarkers(false);
-            MarkerDetectorSvc.ActiveMarker(channel_uuid, true);
-          }, function(o) {
-            _scene.remove(o);
-            AMTHREE.StopSounds(o);
-            AMTHREE.StopAnimatedTextures(o);
-            MarkerDetectorSvc.ActiveAllMarkers(true);
-          });
-        })(channel_uuid);
-
+      function Adder(channel_uuid) {
+        return function(object) {
+          AMTHREE.PlayAnimatedTextures(object);
+          AMTHREE.PlaySounds(object);
+          _scene.add(object);
+          MarkerDetectorSvc.ActiveAllMarkers(false);
+          MarkerDetectorSvc.ActiveMarker(channel_uuid, true);
+        };
       }
+
+      function Remover(channel_uuid) {
+        return function(objet) {
+          _scene.remove(objet);
+          AMTHREE.StopSounds(objet);
+          AMTHREE.StopAnimatedTextures(objet);
+          MarkerDetectorSvc.ActiveAllMarkers(true);
+        };
+      }
+
+      return function() {
+
+        var poi = JourneyManagerSvc.GetCurrentPOI();
+        if (!poi)
+          return;
+
+        var data_journey = DataManagerSvc.GetData();
+        var channels = data_journey.channels;
+        var markers = data_journey.markers;
+
+        for (var i = 0, c = poi.channels.length; i < c; ++i) {
+          var poi_channel = poi.channels[i];
+          var channel_uuid = poi_channel.uuid;
+          var channel = channels[channel_uuid];
+          var marker = markers[channel.marker];
+
+          if (marker.type === 'img')
+            MarkerDetectorSvc.AddMarker(marker.url, channel_uuid);
+
+          var object = objectFactory.BuildChannelContents(channel_uuid, DataManagerSvc.GetData());
+
+          _tracked_obj_manager.Add(object, channel_uuid,
+            new Adder(channel_uuid), new Remover(channel_uuid));
+        }
       
-    }
+      };
+    })();
 
     function OnEnterPOI() {
       AddPOIMarkers();
@@ -231,9 +241,12 @@ angular.module('journey')
       var channels = data_journey.channels;
       var markers = data_journey.markers;
 
-      for (tag of tags) {
+      for (var i = 0, c = tags.length; i < c; ++i) {
+        var tag = tags[i];
         console.log('tag detected: ' + tag.id);
-        for (poi_channel of JourneyManagerSvc.GetCurrentPOI().channels) {
+        var poi_channels = JourneyManagerSvc.GetCurrentPOI().channels;
+        for (var i2 = 0, c2 = poi_channels.length; i2 < c2; ++i2) {
+          var poi_channel = poi_channels[i2];
           var channel = channels[poi_channel.uuid];
           var marker = markers[channel.marker];
           if (marker.type === 'tag' && marker.tag_id === tag.id) {

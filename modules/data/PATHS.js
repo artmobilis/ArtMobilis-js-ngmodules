@@ -19,7 +19,7 @@ angular.module('data')
     CHANNELS: 'channels.json'
   };
 
-  for (i in paths) {
+  for (var i in paths) {
     var path = paths[i];
     paths[i] = assets + path;
   }

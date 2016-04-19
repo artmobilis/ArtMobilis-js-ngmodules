@@ -229,7 +229,7 @@
     this.ActiveMarker = function(uuid, bool) {
       if (_started) {
         if (_use_web_worker)
-          _worker.postMessage( { cmd: 'active', uuid: uuid, value: (bool == true) } );
+          _worker.postMessage( { cmd: 'active', uuid: uuid, value: (bool === true) } );
         else
           _marker_detector.Active(uuid, bool);
       }
@@ -238,7 +238,7 @@
     this.ActiveAllMarkers = function(bool) {
       if (_started) {
         if (_use_web_worker)
-          _worker.postMessage( { cmd: 'active_all', value: (bool == true) } );
+          _worker.postMessage( { cmd: 'active_all', value: (bool === true) } );
         else
           _marker_detector.ActiveAll(bool);
       }
