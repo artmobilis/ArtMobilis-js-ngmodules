@@ -65,6 +65,7 @@ angular.module('journey')
 
   /**
   * Adds the listener.
+  * @memberOf angular_module.journey.GeolocationSvc
   * @param {function} on_watch
   * @param {function} on_error
   */
@@ -86,6 +87,7 @@ angular.module('journey')
 
   /**
   * Removes the listener.
+  * @memberOf angular_module.journey.GeolocationSvc
   */
   function Stop() {
     if (_watching) {
@@ -96,6 +98,7 @@ angular.module('journey')
 
   /**
   * Returns the gps coordinates converted to flat coordinates.
+  * @memberOf angular_module.journey.GeolocationSvc
   * @returns {Object.<x, y>}
   */
   function GetPosition() {
@@ -104,6 +107,7 @@ angular.module('journey')
 
   /**
   * Returns true if the geolocation is loading.
+  * @memberOf angular_module.journey.GeolocationSvc
   * @returns {bool}
   */
   function IsLoading() {
@@ -112,6 +116,7 @@ angular.module('journey')
 
   /**
   * Returns true if the geolocation has started.
+  * @memberOf angular_module.journey.GeolocationSvc
   * @returns {bool}
   */
   function IsWatching() {
@@ -120,6 +125,7 @@ angular.module('journey')
 
   /**
   * Sets the internal coordinates and fires the 'device_move_xy' event
+  * @memberOf angular_module.journey.GeolocationSvc
   * @param {number} latitude - in degrees
   * @param {number} longitude - in degrees
   */
@@ -129,6 +135,7 @@ angular.module('journey')
 
   /**
   * Sets the internal coordinates and fires the 'device_move_xy' event
+  * @memberOf angular_module.journey.GeolocationSvc
   * @param {number} x
   * @param {number} y
   */
