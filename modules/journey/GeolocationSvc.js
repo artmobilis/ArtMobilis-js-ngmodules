@@ -68,7 +68,7 @@ angular.module('journey')
   * @param {function} on_watch
   * @param {function} on_error
   */
-  this.Start = function(on_watch, on_error) {
+  function Start(on_watch, on_error) {
     if (!_watching && !_loading) {
       _on_watch = on_watch;
       _on_error = on_error;
@@ -82,61 +82,68 @@ angular.module('journey')
           _on_error('geolocation unavailable');
       }
     }
-  };
+  }
 
   /**
   * Removes the listener.
   */
-  this.Stop = function() {
+  function Stop() {
     if (_watching) {
       navigator.geolocation.clearWatch(_watch_id);
       _watching = false;
     }
-  };
+  }
 
   /**
   * Returns the gps coordinates converted to flat coordinates.
   * @returns {Object.<x, y>}
   */
-  this.GetPosition = function() {
+  function GetPosition() {
     return { x: _position.x, y: _position.y };
-  };
+  }
 
   /**
   * Returns true if the geolocation is loading.
   * @returns {bool}
   */
-  this.IsLoading = function() {
+  function IsLoading() {
     return _loading;
-  };
+  }
 
   /**
   * Returns true if the geolocation has started.
   * @returns {bool}
   */
-  this.IsWatching = function() {
+  function IsWatching() {
     return _watching;
-  };
+  }
 
   /**
   * Sets the internal coordinates and fires the 'device_move_xy' event
   * @param {number} latitude - in degrees
   * @param {number} longitude - in degrees
   */
-  this.SimulateNewCoords = function(latitude, longitude) {
+  function SimulateNewCoords(latitude, longitude) {
     SetCoords(latitude, longitude);
-  };
+  }
 
   /**
   * Sets the internal coordinates and fires the 'device_move_xy' event
   * @param {number} x
   * @param {number} y
   */
-  this.SimulateNewPosition = function(x, y) {
+  function SimulateNewPosition(x, y) {
     _position.x = x;
     _position.y = y;
     OnNewPosition();
-  };
+  }
 
+  this.Start = Start;
+  this.Stop = Stop;
+  this.GetPosition = GetPosition;
+  this.IsLoading = IsLoading;
+  this.IsWatching = IsWatching;
+  this.SimulateNewCoords = SimulateNewCoords;
+  this.SimulateNewPosition = SimulateNewPosition;
 
 });
