@@ -50,9 +50,6 @@ angular.module('journey')
         _element.appendChild(_canvas);
         _canvas_appended = true;
 
-        // document.body.appendChild(_camera_video_element);
-        // _camera_video_element_appended = true;
-
         window.addEventListener('resize', OnWindowResize);
         OnWindowResize();
 
