@@ -20,7 +20,10 @@
 
       var _canvas3d = document.createElement('canvas');
       var _canvas2d = document.createElement('canvas');
-      _canvas2d.style = "position: absolute; left:0px; top:0px; background-color: transparent;";
+      _canvas2d.style.position = 'absolute';
+      _canvas2d.style.left = '0px';
+      _canvas2d.style.top = '0px';
+      _canvas2d.style['background-color'] = 'transparent';
       var _ctx2d = _canvas2d.getContext('2d');
 
       var _renderer = new THREE.WebGLRenderer( { canvas: _canvas3d, alpha: true } );
@@ -28,6 +31,7 @@
 
       var _camera_width = 0;
       var _camera_height = 0;
+
       var _camera_video_element = CameraSvc.GetVideoElement();
 
       var _debug_enabled = false;
@@ -73,7 +77,7 @@
       }
 
       function OnCamLoaded() {
-        _camera_width  = _camera_video_element.videoWidth,
+        _camera_width  = _camera_video_element.videoWidth;
         _camera_height = _camera_video_element.videoHeight;
       }
 
@@ -126,22 +130,24 @@
         return _canvas2d;
       }
 
-      function Dispose() {
+      function Start() {
+        _camera_video_element.addEventListener('loadedmetadata', OnCamLoaded, false);
+        OnCamLoaded();
+      }
+
+      function Stop() {
         _camera_video_element.removeEventListener('loadedmetadata', OnCamLoaded, false);
       }
 
-      this.Dispose = Dispose;
-
-
       Resize(width, height);
-      _camera_video_element.addEventListener('loadedmetadata', OnCamLoaded, false);
-
 
       this.Render = Render;
       this.Resize = Resize;
       this.SetFov = SetFov;
       this.SetDebug = SetDebug;
       this.GetCanvas = GetCanvas;
+      this.Start = Start;
+      this.Stop = Stop;
 
     }
 
