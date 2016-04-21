@@ -85,6 +85,8 @@
       if (!_enabled)
         return;
 
+      that.Empty();
+
       if (_video instanceof HTMLVideoElement && _video.readyState === _video.HAVE_ENOUGH_DATA) {
 
         var new_size = GetVideoNewSize(_video.videoWidth, _video.videoHeight, that.video_size_target);

@@ -275,7 +275,7 @@ angular.module('journey')
     function Update() {
       if (!Started())
         return;
-
+            
       _orientation_control.Update();
 
       if (JourneyManagerSvc.GetMode() === JourneyManagerSvc.MODE_POI)
