@@ -230,6 +230,7 @@ angular.module('journey')
     }
 
     function UpdateTracking() {
+      MarkerDetectorSvc.Empty();
       MarkerDetectorSvc.Update();
 
       var tags = MarkerDetectorSvc.GetTags();
@@ -282,8 +283,6 @@ angular.module('journey')
         UpdateTracking();
 
       AMTHREE.UpdateAnimatedTextures(_scene);
-
-      MarkerDetectorSvc.Empty();
     }
 
     function GetUserHead() {
