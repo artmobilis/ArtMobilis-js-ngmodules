@@ -142,8 +142,10 @@ angular.module('data')
       var contents = _data_journey.contents;
       var objects = _data_journey.objects;
 
-      for (var i = 0; i < journey.pois.length;) {
-        var poi_id = journey.pois[i];
+      var poi_id, i, channel_id, content_id;
+
+      for (i = 0; i < journey.pois.length;) {
+        poi_id = journey.pois[i];
         if (typeof pois[poi_id] === 'undefined') {
           journey.pois.splice(i, 1);
           NotifyChange('journey');
@@ -152,10 +154,10 @@ angular.module('data')
           ++i;
       }
 
-      for (var poi_id in pois) {
+      for (poi_id in pois) {
         var poi = pois[poi_id];
-        for (var i = 0; i < poi.channels.length;) {
-          var channel_id = poi.channels[i].uuid;
+        for (i = 0; i < poi.channels.length;) {
+          channel_id = poi.channels[i].uuid;
           if (typeof channels[channel_id] === 'undefined') {
             poi.channels.splice(i, 1);
             NotifyChange('poi', poi_id);
@@ -165,15 +167,15 @@ angular.module('data')
         }
       }
 
-      for (var channel_id in channels) {
+      for (channel_id in channels) {
         var channel = channels[channel_id];
         var changed = false;
         if (typeof markers[channel.marker] === 'undefined') {
           channel.marker = null;
           changed = true;
         }
-        for (var i = 0; i < channel.contents.length;) {
-          var content_id = channel.contents[i].uuid;
+        for (i = 0; i < channel.contents.length;) {
+          content_id = channel.contents[i].uuid;
           if (typeof contents[content_id] === 'undefined') {
             channel.contents.splice(i, 1);
             changed = true;
@@ -185,7 +187,7 @@ angular.module('data')
           NotifyChange('channel', channel_id);
       }
 
-      for (var content_id in contents) {
+      for (content_id in contents) {
         var content = contents[content_id];
         if (typeof objects[content.object] === 'undefined') {
           content.object = null;
