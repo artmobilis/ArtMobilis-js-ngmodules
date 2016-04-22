@@ -26,7 +26,6 @@ angular.module('journey')
     objectFactory) {
 
 
-    var _image_loader = new AM.ImageLoader();
     var _camera_video_element = CameraSvc.GetVideoElement();
 
     var _running = false;
