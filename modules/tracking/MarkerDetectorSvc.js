@@ -17,6 +17,7 @@
     var _worker;
     var _marker_detector;
     var _use_web_worker;
+    var _debug=false;
 
     var _canvas = document.createElement('canvas');
     var _ctx = _canvas.getContext('2d');
@@ -104,12 +105,14 @@
             var obj_data = {
               cmd: 'new_img',
               image: image,
-              frame: _frame
+              frame: _frame,
+              debug: _debug
             };
             _worker.postMessage(obj_data, [image.data.buffer]);
           }
         }
         else {
+          _marker_detector.SetDebug(_debug);
           var result = _marker_detector.ComputeImage(image);
           _marker = result.marker;
           _tags = result.tags;
@@ -245,6 +248,9 @@
       }
     };
 
+    this.SetDebug = function(bool){
+      _debug=bool;
+    };
 
   }
 

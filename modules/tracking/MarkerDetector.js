@@ -5,6 +5,8 @@ function MarkerDetector() {
   var _marker_tracker = new AM.MarkerTracker();
   var _marker_tracker_enabled = true;
 
+  var _debug=false;
+
   var _commands = {
     new_img:                CmdOnNewImage,
     add_marker:             CmdAddMarker,
@@ -33,26 +35,37 @@ function MarkerDetector() {
 
     _marker_tracker.ComputeImage(image_data);
     if (_marker_tracker.Match()) {
-      return { 
-        matched: true,
-        uuid:    _marker_tracker.GetMatchUuid(),
-        corners: _marker_tracker.GetPose(),
-        trained_corners:_marker_tracker.GetTrainedCorners(),
-        screen_corners: _marker_tracker.GetScreenCorners(),
-        matches: _marker_tracker.GetMatches(),
-        matches_mask: _marker_tracker.GetMatchesMask(),
-        profiles: _marker_tracker.GetProfiler(),
-        image_data: image_data  // warning, put this object at the end or it crashes (webworker only pas stringable objects through Postmessages)
-     };    
-    }
+      if(!_debug)
+        return { 
+          matched: true,
+          uuid:    _marker_tracker.GetMatchUuid(),
+          profiles: _marker_tracker.GetProfiler()
+        };  
+        else return { 
+          matched: true,
+          uuid:    _marker_tracker.GetMatchUuid(),
+          corners: _marker_tracker.GetPose(),
+          trained_corners:_marker_tracker.GetTrainedCorners(),
+          screen_corners: _marker_tracker.GetScreenCorners(),
+          matches: _marker_tracker.GetMatches(),
+          matches_mask: _marker_tracker.GetMatchesMask(),
+          profiles: _marker_tracker.GetProfiler(),
+          image_data: image_data  // warning, put this object at the end or it crashes (webworker only pas stringable objects through Postmessages)
+        };    
+      }
 
-    return { 
-      matched: false,
-      image_data: image_data,
-      screen_corners: _marker_tracker.GetScreenCorners(),
-      profiles: _marker_tracker.GetProfiler()
-    };
-  }
+    if(!_debug)
+      return { 
+        matched: false,
+        profiles: _marker_tracker.GetProfiler()
+      };  
+      else return { 
+        matched: false,
+        image_data: image_data,
+        screen_corners: _marker_tracker.GetScreenCorners(),
+        profiles: _marker_tracker.GetProfiler()
+      };
+    }
 
   function DetectTags(image) {
     return _tag_detector.detect(image);
@@ -101,9 +114,14 @@ function MarkerDetector() {
   }
 
   function Command(cmd, data) {
+    SetDebug(data.debug);
     var fun = _commands[cmd];
     if (fun)
       return fun(data);
+  }
+
+  function  SetDebug(bool) {
+    _debug=bool;
   }
 
   function CmdOnNewImage(data)           { return OnNewImage(data.image); }
@@ -122,4 +140,5 @@ function MarkerDetector() {
   this.EnableImageDetection = EnableImageDetection;
   this.EnableTagDetection = EnableTagDetection;
   this.ComputeImage = OnNewImage;
+  this.SetDebug = SetDebug;
 }
