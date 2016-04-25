@@ -28,8 +28,6 @@
     var _frame = 0;
     var _frame_worker = 0;
 
-    var _image_loader = new AM.ImageLoader();
-
     var _on_added_callbacks = {};
 
     var _enabled = true;
@@ -193,8 +191,9 @@
 
         _on_added_callbacks[uuid] = on_end;
 
-        _image_loader.GetImageData(url, function(url, uuid) {
-          return function(image_data) {
+        AM.LoadImage(url).then(function(url, uuid) {
+          return function(image) {
+            var image_data = AM.ImageToImageData(image, true);
 
             if (_use_web_worker) {
               var msg = {
@@ -210,7 +209,7 @@
             }
 
           };
-        }(url, uuid), true);
+        }(url, uuid));
 
 
       } else
