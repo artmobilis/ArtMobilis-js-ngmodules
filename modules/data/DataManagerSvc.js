@@ -6,7 +6,7 @@
 
 angular.module('data')
 
-.factory('DataManagerSvc', ['dataJourneyFactory', 'PATHS', function(dataJourneyFactory, PATHS) {
+.factory('DataManagerSvc', ['dataJourneyFactory', function(dataJourneyFactory) {
 
   /*
   * A string, id of an asset type
