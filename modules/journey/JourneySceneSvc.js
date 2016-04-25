@@ -229,7 +229,7 @@ angular.module('journey')
     }
 
     function UpdateTracking() {
-      MarkerDetectorSvc.Empty();
+      //MarkerDetectorSvc.Empty();
       MarkerDetectorSvc.Update();
 
       var tags = MarkerDetectorSvc.GetTags();
