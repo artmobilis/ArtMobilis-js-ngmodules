@@ -6,7 +6,7 @@
 
 angular.module('data')
 
-.factory('DataManagerSvc', ['dataJourneyFactory', 'PATHS', function(dataJourneyFactory, PATHS) {
+.factory('DataManagerSvc', ['dataJourneyFactory', function(dataJourneyFactory) {
 
   /*
   * A string, id of an asset type
@@ -115,17 +115,6 @@ angular.module('data')
       return _data_journey;
     }
 
-    function LoadPresets() {
-      LoadData(PATHS.OBJECTS, 'object_array');
-      LoadData(PATHS.CONTENTS, 'content_array');
-      LoadData(PATHS.MARKERS, 'marker_array');
-      LoadData(PATHS.CHANNELS, 'channel_array');
-      LoadData(PATHS.POIS, 'poi_array');
-      LoadData(PATHS.JOURNEY, 'journey');
-
-      return _load_promise;
-    }
-
     function GetLoadPromise() {
       return _load_promise;
     }
@@ -200,7 +189,6 @@ angular.module('data')
     this.ParseData = ParseData;
     this.Clear = Clear;
     this.GetData = GetData;
-    this.LoadPresets = LoadPresets;
     this.GetLoadPromise = GetLoadPromise;
     this.CleanReferences = CleanReferences;
     this.AddListenerDataChange = AddListenerDataChange;
