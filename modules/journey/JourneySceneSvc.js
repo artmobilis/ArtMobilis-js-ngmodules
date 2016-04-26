@@ -16,7 +16,6 @@ angular.module('journey')
   'objectFactory',
   (function() {
 
-
   function JourneySceneSvc(
     JourneyManagerSvc,
     DataManagerSvc,
@@ -179,6 +178,12 @@ angular.module('journey')
       o.scale.set(1, 1, 1);
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Starts the service, and starts the services it depends on, MarkerDetectorSvc, JourneyManagerSvc, CameraSvc.
+    * @param {bool} [use_web_worker=true] - If true, uses a Web Worker for the image detection computations.
+    */
     function Start(use_web_worker) {
       if (Started())
         return;
@@ -207,10 +212,21 @@ angular.module('journey')
       });
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Returns true if started or loading.
+    * @returns {bool}
+    */
     function Started() {
       return _running || _loading;
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Stops the service, and the services it depends on.
+    */
     function Stop() {
       if (!Started())
         return;
@@ -272,11 +288,18 @@ angular.module('journey')
       _tracked_obj_manager.Update();
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Updates the scene.
+    */
     function Update() {
       if (!Started())
         return;
 
       _orientation_control.Update();
+
+      // console.log(_orientation_control.alpha - Math.PI / 2);
 
       if (JourneyManagerSvc.GetMode() === JourneyManagerSvc.MODE_POI)
         UpdateTracking();
@@ -284,10 +307,22 @@ angular.module('journey')
       AMTHREE.UpdateAnimatedTextures(_scene);
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Returns an object on the scene, representation of the head of the user. This object is a child of the body object.
+    * @returns {THREE.Object3D}
+    */
     function GetUserHead() {
       return _user_head;
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Returns an object on the scene, representation of the body of the user. This object is the parent of the head object.
+    * @returns {THREE.Object3D}
+    */
     function GetUserBody() {
       return _user_body;
     }
@@ -308,6 +343,12 @@ angular.module('journey')
       return _promise;
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Returns the scene.
+    * @returns {THREE.Scene}
+    */
     function GetScene() {
       return _scene;
     }
