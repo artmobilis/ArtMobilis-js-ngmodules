@@ -61,7 +61,8 @@ function MarkerDetector() {
         return { 
           matched: true,
           uuid:    _marker_tracker.GetMatchUuid(),
-          profiles: _marker_tracker.GetProfiler()
+          profiles: _marker_tracker.GetProfiler(),
+          corners: _marker_tracker.GetPose()
         };
 
       return { 
