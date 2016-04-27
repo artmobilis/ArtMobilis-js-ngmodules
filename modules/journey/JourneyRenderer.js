@@ -42,6 +42,8 @@
       var _camera_video_element = CameraSvc.GetVideoElement();
 
       var _debug_enabled = true; // display corners and matching result
+      var _matching_persistence=30;
+      var _matching_display=0;
       var _marker_corners;
       var _image_debugger = new AM.ImageDebugger();
       _image_debugger.SetData(_ctx2d, CameraSvc.GetVideoElement(), _debug_enabled);
@@ -80,12 +82,18 @@
         _image_debugger.UpdateSize(_canvas2d, MarkerDetectorSvc.video_size_target);
         _image_debugger.DrawCorners(marker_corners);
 
-        if (marker_corners.matched){
+        if (marker_corners.matched) {
+          _matching_display=_matching_persistence;
+          _last_matching_uuid =marker_corners.uuid;
+        }
+
+        if(_matching_display){
           var data_journey = DataManagerSvc.GetData();
-          var channel = data_journey.channels[marker_corners.uuid];
+          var channel = data_journey.channels[_last_matching_uuid];
           var url = data_journey.markers[channel.marker].url;
 
           _image_debugger.DebugMatching(marker_corners, url);
+          _matching_display--;
         }
         _marker_corners = marker_corners;
       }
