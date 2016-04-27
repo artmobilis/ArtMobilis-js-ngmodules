@@ -42,7 +42,7 @@
       var _camera_video_element = CameraSvc.GetVideoElement();
 
       var _debug_enabled = true; // display corners and matching result
-      var _matching_persistence=5;
+      var _matching_persistence=30;
       var _matching_display=0;
       var _marker_corners;
       var _image_debugger = new AM.ImageDebugger();
