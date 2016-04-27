@@ -243,7 +243,7 @@ angular.module('journey')
     }
 
     function UpdateTracking() {
-      MarkerDetectorSvc.Empty();
+      //MarkerDetectorSvc.Empty();
       MarkerDetectorSvc.Update();
 
       var tags = MarkerDetectorSvc.GetTags();
@@ -294,7 +294,7 @@ angular.module('journey')
     function Update() {
       if (!Started())
         return;
-
+            
       _orientation_control.Update();
 
       // console.log(_orientation_control.alpha - Math.PI / 2);

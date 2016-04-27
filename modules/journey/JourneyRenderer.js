@@ -41,11 +41,10 @@
 
       var _camera_video_element = CameraSvc.GetVideoElement();
 
-      var _debug_enabled = false;
-      var _debugMatches = false;
+      var _debug_enabled = true; // display corners and matching result
       var _marker_corners;
       var _image_debugger = new AM.ImageDebugger();
-      _image_debugger.SetData(_ctx2d, CameraSvc.GetVideoElement(), _debugMatches);
+      _image_debugger.SetData(_ctx2d, CameraSvc.GetVideoElement(), _debug_enabled);
 
 
       /**
@@ -68,9 +67,11 @@
       }
 
       function RenderDebug() {
+        MarkerDetectorSvc.SetDebug(true);
         var marker_corners = MarkerDetectorSvc.GetMarker();
 
         if (marker_corners === undefined)  {
+          //return; // uncomment to view live result 
           if( _marker_corners === undefined) 
             return;
           marker_corners = _marker_corners; // use last detection for continuous display
