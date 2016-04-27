@@ -4,11 +4,8 @@ angular.module('utility')
 
   var camera_grabbing = new AM.FrontCamGrabbing();
 
-  this.Start = function(on_loading_end, on_error) {
-    camera_grabbing.Start().then(on_loading_end, function(e) {
-      on_error(e);
-      on_loading_end();
-    });
+  this.Start = function() {
+    return camera_grabbing.Start();
   };
 
   this.Stop = function() {

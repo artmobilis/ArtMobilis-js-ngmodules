@@ -150,9 +150,7 @@ angular.module('journey')
     }
 
     function StartCamera() {
-      return new Promise(function(resolve, reject) {
-        CameraSvc.Start(resolve, reject);
-      });
+        CameraSvc.Start();
     }
 
     function StartMarkerDetector(use_web_worker) {
