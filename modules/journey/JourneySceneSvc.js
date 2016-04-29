@@ -125,12 +125,7 @@ angular.module('journey')
     }
 
     function OnExitPOI() {
-      _scene.remove(_poi_limit_obj);
-      _scene.remove(_channels_landmarks);
-      _channels_landmarks = undefined;
-
-      MarkerDetectorSvc.ClearMarkers();
-      _tracked_obj_manager.Clear();
+      Reset();
     }
 
     function OnJourneyModeChange() {
@@ -169,12 +164,6 @@ angular.module('journey')
     function OnDeviceMove(e) {
       _user_body.position.x = e.detail.x;
       _user_body.position.z = e.detail.y;
-    }
-
-    function ResetObject(o) {
-      o.position.set(0, 0, 0);
-      o.rotation.set(0, 0, 0);
-      o.scale.set(1, 1, 1);
     }
 
     /**
@@ -231,6 +220,7 @@ angular.module('journey')
         return;
 
       return AddTasks(function() {
+        Reset();
       
         JourneyManagerSvc.Stop();
         document.removeEventListener('journey_mode_change', OnJourneyModeChange, false);
@@ -298,8 +288,6 @@ angular.module('journey')
             
       _orientation_control.Update();
 
-      // console.log(_orientation_control.alpha - Math.PI / 2);
-
       if (JourneyManagerSvc.GetMode() === JourneyManagerSvc.MODE_POI)
         UpdateTracking();
 
@@ -350,6 +338,15 @@ angular.module('journey')
     */
     function GetScene() {
       return _scene;
+    }
+
+    function Reset() {
+      _scene.remove(_poi_limit_obj);
+      _scene.remove(_channels_landmarks);
+      _channels_landmarks = undefined;
+
+      MarkerDetectorSvc.ClearMarkers();
+      _tracked_obj_manager.Clear();
     }
 
     this.Start = Start;

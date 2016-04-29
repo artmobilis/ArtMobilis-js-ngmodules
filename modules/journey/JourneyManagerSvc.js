@@ -176,6 +176,7 @@ angular.module('journey')
   */
   function Stop() {
     if (_running) {
+      Reset();
       GeolocationSvc.Stop();
       DataManagerSvc.RemoveListenerDataChange(OnDataChange);
       document.removeEventListener('device_move_xy', OnDeviceMove, false);

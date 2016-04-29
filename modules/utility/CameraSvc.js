@@ -20,4 +20,16 @@ angular.module('utility')
     return camera_grabbing.domElement;
   };
 
+  this.Pause = function(bool) {
+    camera_grabbing.Pause(bool);
+  };
+
+  this.TogglePause = function() {
+    camera_grabbing.TogglePause();
+  };
+
+  this.IsPaused = function() {
+    camera_grabbing.IsPaused();
+  }
+
 });
