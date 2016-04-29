@@ -292,8 +292,6 @@ angular.module('journey')
             
       _orientation_control.Update();
 
-      // console.log(_orientation_control.alpha - Math.PI / 2);
-
       if (JourneyManagerSvc.GetMode() === JourneyManagerSvc.MODE_POI)
         UpdateTracking();
 
