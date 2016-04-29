@@ -200,6 +200,10 @@
         _camera_video_element.removeEventListener('loadedmetadata', OnCamLoaded, false);
       }
 
+      function SetDebug(bool) {
+        _debug_enabled = bool;
+      }
+
       Resize(width, height);
 
       this.Render = Render;
@@ -209,6 +213,7 @@
       this.GetCanvas = GetCanvas;
       this.Start = Start;
       this.Stop = Stop;
+      this.SetDebug = SetDebug;
 
     }
 
