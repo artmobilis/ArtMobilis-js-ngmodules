@@ -125,12 +125,7 @@ angular.module('journey')
     }
 
     function OnExitPOI() {
-      _scene.remove(_poi_limit_obj);
-      _scene.remove(_channels_landmarks);
-      _channels_landmarks = undefined;
-
-      MarkerDetectorSvc.ClearMarkers();
-      _tracked_obj_manager.Clear();
+      Reset();
     }
 
     function OnJourneyModeChange() {
@@ -225,6 +220,7 @@ angular.module('journey')
         return;
 
       return AddTasks(function() {
+        Reset();
       
         JourneyManagerSvc.Stop();
         document.removeEventListener('journey_mode_change', OnJourneyModeChange, false);
@@ -342,6 +338,15 @@ angular.module('journey')
     */
     function GetScene() {
       return _scene;
+    }
+
+    function Reset() {
+      _scene.remove(_poi_limit_obj);
+      _scene.remove(_channels_landmarks);
+      _channels_landmarks = undefined;
+
+      MarkerDetectorSvc.ClearMarkers();
+      _tracked_obj_manager.Clear();
     }
 
     this.Start = Start;
