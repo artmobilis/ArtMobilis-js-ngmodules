@@ -171,12 +171,6 @@ angular.module('journey')
       _user_body.position.z = e.detail.y;
     }
 
-    function ResetObject(o) {
-      o.position.set(0, 0, 0);
-      o.rotation.set(0, 0, 0);
-      o.scale.set(1, 1, 1);
-    }
-
     /**
     * @function
     * @memberOf angular_module.journey.JourneySceneSvc
