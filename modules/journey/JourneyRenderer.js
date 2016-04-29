@@ -34,10 +34,14 @@
       var _ctx2d = _canvas2d.getContext('2d');
 
       var _renderer = new THREE.WebGLRenderer( { canvas: _canvas3d, alpha: true } );
-      var _camera = new THREE.PerspectiveCamera(60, 1, 0.001, 10000);
+      var _camera = new THREE.PerspectiveCamera(40, 1, 0.001, 10000);
 
-      var _camera_width = 0;
+      var _camera_width  = 0;
       var _camera_height = 0;
+      var _render_width  = 0;
+      var _render_height = 0;
+      var _padding_h = 0;
+      var _padding_v = 0;
 
       var _camera_video_element = CameraSvc.GetVideoElement();
 
@@ -50,18 +54,33 @@
       /**
       * Resizes the renderer, the canvas, and the 3D camera.
       * @memberOf angular_module.journey.JourneyRenderer
-      * @param {number} width
-      * @param {number} height
+      * @param {number} [width]
+      * @param {number} [height]
       */
       function Resize(width, height) {
-        width = width || _canvas3d.width;
-        height = height || _canvas3d.height;
+        width  = width  || _canvas2d.width;
+        height = height || _canvas2d.height;
 
-        _renderer.setSize(width, height);
-        _canvas2d.width = width;
+        _canvas2d.width  = width;
         _canvas2d.height = height;
-        if (height > 0) {
-          _camera.aspect = width / height;
+
+        if (_camera_width > 0 && _camera_height > 0) {
+          var ratio_x = _canvas2d.width  / _camera_width;
+          var ratio_y = _canvas2d.height / _camera_height;
+          var ratio   = Math.max(ratio_x, ratio_y);
+          _render_width  = _camera_width  * ratio;
+          _render_height = _camera_height * ratio;
+          _padding_h  = (_canvas2d.width  - _render_width ) / 2;
+          _padding_v  = (_canvas2d.height - _render_height) / 2;
+        }
+        else {
+          _render_width  = width;
+          _render_height = height;
+        }
+
+        _renderer.setSize(_render_width, _render_height);
+        if (_render_height > 0) {
+          _camera.aspect = _render_width / _render_height;
           _camera.updateProjectionMatrix();
         }
       }
@@ -93,20 +112,13 @@
       function OnCamLoaded() {
         _camera_width  = _camera_video_element.videoWidth;
         _camera_height = _camera_video_element.videoHeight;
+        Resize();
       }
 
       function CopyVideo() {
         if (_camera_video_element.readyState === _camera_video_element.HAVE_ENOUGH_DATA) {
           if (_camera_width > 0 && _camera_height > 0) {
-            var ratio_x = _canvas2d.width  / _camera_width;
-            var ratio_y = _canvas2d.height / _camera_height;
-            var ratio   = Math.max(ratio_x, ratio_y);
-            var diff_h  = (_canvas2d.width  - _camera_width  * ratio) / 2;
-            var diff_v  = (_canvas2d.height - _camera_height * ratio) / 2;
-            var new_width  = _camera_width  * ratio;
-            var new_height = _camera_height * ratio;
-
-            _ctx2d.drawImage(_camera_video_element, diff_h, diff_v, new_width, new_height);
+            _ctx2d.drawImage(_camera_video_element, _padding_h, _padding_v, _render_width, _render_height);
           }
         }
       }
@@ -125,7 +137,7 @@
 
         CopyVideo();
 
-        _ctx2d.drawImage(_canvas3d, 0, 0);
+        _ctx2d.drawImage(_canvas3d, _padding_h, _padding_v, _render_width, _render_height);
 
         if (JourneyManagerSvc.GetMode() !== JourneyManagerSvc.MODE_POI) {
           RenderBubbles(_canvas2d, _camera);
