@@ -25,6 +25,7 @@ angular.module('utility')
   }
 
   function Stop() {
+    _paused = false;
     _started = false;
     _video_element.src = '';
     _camera_grabbing.Stop();
@@ -63,20 +64,24 @@ angular.module('utility')
   function SetVideo(url) {
     _use_video = true;
     _url = url;
-    if (IsActive()) {
-      Stop();
-      Start();
-    }
+    Restart();
   }
 
   function Reset() {
     if (_use_video) {
       _use_video = false;
       _url = '';
-      if (IsActive()) {
-        Stop();
-        Start();
-      }
+      Restart();
+    }
+  }
+
+  function Restart() {
+    if (IsActive()) {
+      var paused = _paused;
+      Stop();
+      Start().then(function() {
+        Pause(paused);
+      });
     }
   }
 
