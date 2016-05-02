@@ -45,7 +45,7 @@
 
       var _camera_video_element = CameraSvc.GetVideoElement();
 
-      var _debug_enabled = true; // display corners and matching result
+      var _debug_enabled = false; // display corners and matching result
       var _matching_persistence=30;
       var _matching_display=0;
       var _marker_corners;
@@ -172,6 +172,7 @@
       */
       function SetDebug(bool) {
         _debug_enabled = bool;
+        _image_debugger.SetDebug(bool);
       }
 
       /**
