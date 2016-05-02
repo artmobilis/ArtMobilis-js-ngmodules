@@ -2,34 +2,34 @@ angular.module('utility')
 
 .service('CameraSvc', function() {
 
-  var camera_grabbing = new AM.FrontCamGrabbing();
+  var _camera_grabbing = new AM.FrontCamGrabbing();
 
   this.Start = function() {
-    return camera_grabbing.Start();
+    return _camera_grabbing.Start();
   };
 
   this.Stop = function() {
-    camera_grabbing.Stop();
+    _camera_grabbing.Stop();
   };
 
   this.IsActive = function() {
-    return camera_grabbing.IsActive();
+    return _camera_grabbing.IsActive();
   };
 
   this.GetVideoElement = function() {
-    return camera_grabbing.domElement;
+    return _camera_grabbing.domElement;
   };
 
   this.Pause = function(bool) {
-    camera_grabbing.Pause(bool);
+    _camera_grabbing.Pause(bool);
   };
 
   this.TogglePause = function() {
-    camera_grabbing.TogglePause();
+    _camera_grabbing.TogglePause();
   };
 
   this.IsPaused = function() {
-    camera_grabbing.IsPaused();
+    _camera_grabbing.IsPaused();
   }
 
 });
