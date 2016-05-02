@@ -60,6 +60,8 @@ angular.module('journey')
 
     var _channels_landmarks;
 
+    var _use_fixed_angle = false;
+
 
     var AddPOIMarkers = (function() {
 
@@ -233,9 +235,9 @@ angular.module('journey')
       });
     }
 
-    function UpdateTracking() {
+    function UpdateTracking(angle) {
       //MarkerDetectorSvc.Empty();
-      MarkerDetectorSvc.Update();
+      MarkerDetectorSvc.Update(angle);
 
       var tags = MarkerDetectorSvc.GetTags();
       var marker_corners = MarkerDetectorSvc.GetMarker();
@@ -288,8 +290,14 @@ angular.module('journey')
             
       _orientation_control.Update();
 
-      if (JourneyManagerSvc.GetMode() === JourneyManagerSvc.MODE_POI)
-        UpdateTracking();
+      if (JourneyManagerSvc.GetMode() === JourneyManagerSvc.MODE_POI) {
+        if (_use_fixed_angle) {
+          var alpha = _orientation_control.alpha - Math.PI / 2;
+          UpdateTracking(alpha);
+        }
+        else
+          UpdateTracking();
+      }
 
       AMTHREE.UpdateAnimatedTextures(_scene);
     }
@@ -349,6 +357,17 @@ angular.module('journey')
       _tracked_obj_manager.Clear();
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Sets whether corner orientation should be computed, or if the angle is given for each image.
+    * @param {boolean} bool - If false, corner orientation is computed, which is the default behaviour.
+    */
+    function DetectionUseFixedAngle(bool) {
+      MarkerDetectorSvc.UseFixedAngle(bool);
+      _use_fixed_angle = bool;
+    }
+
     this.Start = Start;
     this.Started = Started;
     this.Stop = Stop;
@@ -356,6 +375,7 @@ angular.module('journey')
     this.GetUserBody = GetUserBody;
     this.GetUserHead = GetUserHead;
     this.GetScene = GetScene;
+    this.DetectionUseFixedAngle = DetectionUseFixedAngle;
   }
 
   return JourneySceneSvc;

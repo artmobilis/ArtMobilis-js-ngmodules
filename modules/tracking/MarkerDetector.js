@@ -14,7 +14,8 @@ function MarkerDetector() {
     active_all:             CmdActiveAll,
     active:                 CmdActive,
     enable_tag_detection:   CmdEnableTagDetection,
-    enable_image_detection: CmdEnableImageDetection
+    enable_image_detection: CmdEnableImageDetection,
+    use_fixed_angle:        CmdUseFixedAngle
   };
 
   _marker_tracker.SetParameters({
@@ -30,10 +31,10 @@ function MarkerDetector() {
   });
 
 
-  function DetectMarkerImage(image_data) {
+  function DetectMarkerImage(image_data, fixed_angle) {
     //_marker_tracker.Log();
 
-    _marker_tracker.ComputeImage(image_data);
+    _marker_tracker.ComputeImage(image_data, fixed_angle);
 
     if(_debug) {
       if (_marker_tracker.Match()) 
@@ -76,7 +77,7 @@ function MarkerDetector() {
     return _tag_detector.detect(image);
   }
 
-  function OnNewImage(image) {
+  function OnNewImage(image, angle) {
     var tags;
     
     if (_tag_detector_enabled)
@@ -86,7 +87,7 @@ function MarkerDetector() {
 
     var marker;
     if (_marker_tracker_enabled)
-      marker = DetectMarkerImage(image);
+      marker = DetectMarkerImage(image, angle);
 
     return {
       tags: tags,
@@ -129,13 +130,18 @@ function MarkerDetector() {
     _debug=bool;
   }
 
-  function CmdOnNewImage(data)           { return OnNewImage(data.image); }
+  function UseFixedAngle(bool) {
+    _marker_tracker.UseFixedAngle(bool);
+  }
+
+  function CmdOnNewImage(data)           { return OnNewImage(data.image, data.angle); }
   function CmdAddMarker(data)            { AddMarker(data.image_data, data.uuid); }
   function CmdClear()                    { Clear(); }
   function CmdActiveAll(data)            { ActiveAll(data.value); }
   function CmdActive(data)               { Active(data.uuid, data.value); }
   function CmdEnableTagDetection(data)   { EnableTagDetection(data.value); }
   function CmdEnableImageDetection(data) { EnableImageDetection(data.value); }
+  function CmdUseFixedAngle(data)        { UseFixedAngle(data.value); }
 
   this.Command = Command;
   this.AddMarker = AddMarker;
@@ -146,4 +152,5 @@ function MarkerDetector() {
   this.EnableTagDetection = EnableTagDetection;
   this.ComputeImage = OnNewImage;
   this.SetDebug = SetDebug;
+  this.UseFixedAngle = UseFixedAngle;
 }

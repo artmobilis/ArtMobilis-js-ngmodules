@@ -34,6 +34,9 @@
     var _enabled = true;
     var _started = false;
 
+    var _use_fixed_angle = false;
+
+
     this.video_size_target = 210;
 
     this.position = new THREE.Vector3();
@@ -77,12 +80,14 @@
         else {
           _marker_detector = new MarkerDetector();
         }
+
+        SetUseFixedAngle();
       }
 
       // _worker.postMessage( { cmd: 'enable_tag_detection', value: false } );
     };
 
-    this.Update = function() {
+    this.Update = function(fixed_angle) {
       if (!_enabled)
         return;
 
@@ -104,14 +109,15 @@
               cmd: 'new_img',
               image: image,
               frame: _frame,
-              debug: _debug
+              debug: _debug,
+              angle: fixed_angle
             };
             _worker.postMessage(obj_data, [image.data.buffer]);
           }
         }
         else {
           _marker_detector.SetDebug(_debug);
-          var result = _marker_detector.ComputeImage(image);
+          var result = _marker_detector.ComputeImage(image, fixed_angle);
           _marker = result.marker;
           _tags = result.tags;
         }
@@ -248,6 +254,27 @@
 
     this.SetDebug = function(bool){
       _debug=bool;
+    };
+
+    function SetUseFixedAngle() {
+      if (_started) {
+        if (_worker) {
+          _worker.postMessage( {
+            cmd: 'use_fixed_angle',
+            value: _use_fixed_angle
+          } );
+        }
+        else if (_marker_detector) {
+          _marker_detector.UseFixedAngle(_use_fixed_angle);
+        }
+      }
+    }
+
+    this.UseFixedAngle = function(bool) {
+      if (typeof bool === 'boolean' && bool !== _use_fixed_angle) {
+        _use_fixed_angle = bool;
+        SetUseFixedAngle();
+      }
     };
 
   }

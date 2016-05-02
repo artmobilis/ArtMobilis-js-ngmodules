@@ -18,6 +18,7 @@ angular.module('journey')
         var _scene;
 
         var _journey_renderer = new JourneyRenderer();
+        _journey_renderer.SetFov(80);
 
         var _canvas = _journey_renderer.GetCanvas();
         var _canvas_appended = false;
