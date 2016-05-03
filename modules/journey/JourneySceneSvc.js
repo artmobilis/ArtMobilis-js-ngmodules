@@ -47,7 +47,9 @@ angular.module('journey')
 
     var _tracked_obj_manager = new AMTHREE.TrackedObjManager( {
       camera: _user_head,
-      lerp_factor: 0.05,
+      lerp_track_factor: 0.01,
+      lerp_update_factor: 0.3,
+      damping_factor: 0.9,
       timeout: 10
     } );
 
