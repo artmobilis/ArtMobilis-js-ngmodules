@@ -260,7 +260,7 @@ angular.module('journey')
       }
 
       if (marker_corners) {
-        console.log('image processed, no marker detected');
+//        console.log('image processed, no marker detected');
         if (marker_corners.matched) {
           console.log('marker detected: ' + marker_corners.uuid);
           MarkerDetectorSvc.SetTransform(marker_corners);

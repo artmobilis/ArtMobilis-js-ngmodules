@@ -46,6 +46,7 @@
       var _camera_video_element = CameraSvc.GetVideoElement();
 
       var _debug_enabled = false; // display corners and matching result
+      var _continuous_debug_display=true;
       var _matching_persistence=30;
       var _matching_display=0;
       var _marker_corners;
@@ -101,7 +102,8 @@
         _image_debugger.UpdateSize(_canvas2d, MarkerDetectorSvc.video_size_target);
         _image_debugger.DrawCorners(marker_corners);
 
-        if (marker_corners.matched) {
+        // an image marker has been found
+        if (marker_corners.matched || _continuous_debug_display) {
           _matching_display=_matching_persistence;
           _last_matching_uuid =marker_corners.uuid;
         }

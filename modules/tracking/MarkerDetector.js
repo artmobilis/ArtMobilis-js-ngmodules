@@ -37,9 +37,8 @@ function MarkerDetector() {
     _marker_tracker.ComputeImage(image_data, fixed_angle);
 
     if(_debug) {
-      if (_marker_tracker.Match()) 
         return { 
-          matched: true,
+          matched: _marker_tracker.Match(),
           uuid:    _marker_tracker.GetMatchUuid(),
           corners: _marker_tracker.GetPose(),
           trained_corners:_marker_tracker.GetTrainedCorners(),
@@ -49,13 +48,6 @@ function MarkerDetector() {
           profiles: _marker_tracker.GetProfiler(),
           image_data: image_data  // warning, put this object at the end or it crashes (webworker only pas stringable objects through Postmessages)
         };    
-
-      return { 
-        matched: false,
-        image_data: image_data,
-        screen_corners: _marker_tracker.GetScreenCorners(),
-        profiles: _marker_tracker.GetProfiler()
-      };
     }
     else { // not debug
       if (_marker_tracker.Match()) 
