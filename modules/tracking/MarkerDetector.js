@@ -36,33 +36,52 @@ function MarkerDetector() {
 
     _marker_tracker.ComputeImage(image_data, fixed_angle);
 
-    if(_debug) {
-        return { 
-          matched: _marker_tracker.Match(),
-          uuid:    _marker_tracker.GetMatchUuid(),
-          corners: _marker_tracker.GetPose(),
-          trained_corners:_marker_tracker.GetTrainedCorners(),
-          screen_corners: _marker_tracker.GetScreenCorners(),
-          matches: _marker_tracker.GetMatches(),
-          matches_mask: _marker_tracker.GetMatchesMask(),
-          profiles: _marker_tracker.GetProfiler(),
-          image_data: image_data  // warning, put this object at the end or it crashes (webworker only pas stringable objects through Postmessages)
-        };    
+    var matched = _marker_tracker.Match();
+    var result = {
+      matched: matched,
+      profiles: _marker_tracker.GetProfiler()
     }
-    else { // not debug
-      if (_marker_tracker.Match()) 
-        return { 
-          matched: true,
-          uuid:    _marker_tracker.GetMatchUuid(),
-          profiles: _marker_tracker.GetProfiler(),
-          corners: _marker_tracker.GetPose()
-        };
+    if (matched) {
+      result.uuid = _marker_tracker.GetMatchUuid();
+      result.corners = _marker_tracker.GetPose();
+    }
+    if (_debug) {
+      result.trained_corners = _marker_tracker.GetTrainedCorners();
+      result.screen_corners = _marker_tracker.GetScreenCorners();
+      result.matches = _marker_tracker.GetMatches();
+      result.matches_mask = _marker_tracker.GetMatchesMask();
+      result.image_data = image_data;
+    }
 
-      return { 
-        matched: false,
-        profiles: _marker_tracker.GetProfiler()
-      };  
-    }
+    return result;
+
+    // if(_debug) {
+    //     return { 
+    //       matched: ,
+    //       uuid:    _marker_tracker.GetMatchUuid(),
+    //       corners: _marker_tracker.GetPose(),
+    //       trained_corners:_marker_tracker.GetTrainedCorners(),
+    //       screen_corners: _marker_tracker.GetScreenCorners(),
+    //       matches: _marker_tracker.GetMatches(),
+    //       matches_mask: _marker_tracker.GetMatchesMask(),
+    //       profiles: _marker_tracker.GetProfiler(),
+    //       image_data: image_data  // warning, put this object at the end or it crashes (webworker only pas stringable objects through Postmessages)
+    //     };    
+    // }
+    // else { // not debug
+    //   if (_marker_tracker.Match()) 
+    //     return { 
+    //       matched: true,
+    //       uuid:    _marker_tracker.GetMatchUuid(),
+    //       profiles: _marker_tracker.GetProfiler(),
+    //       corners: _marker_tracker.GetPose()
+    //     };
+
+    //   return { 
+    //     matched: false,
+    //     profiles: _marker_tracker.GetProfiler()
+    //   };  
+    // }
   }
 
   function DetectTags(image) {
