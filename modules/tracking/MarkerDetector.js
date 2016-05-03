@@ -14,7 +14,8 @@ function MarkerDetector() {
     active_all:             CmdActiveAll,
     active:                 CmdActive,
     enable_tag_detection:   CmdEnableTagDetection,
-    enable_image_detection: CmdEnableImageDetection
+    enable_image_detection: CmdEnableImageDetection,
+    use_fixed_angle:        CmdUseFixedAngle
   };
 
   _marker_tracker.SetParameters({
@@ -30,45 +31,64 @@ function MarkerDetector() {
   });
 
 
-  function DetectMarkerImage(image_data) {
+  function DetectMarkerImage(image_data, fixed_angle) {
     //_marker_tracker.Log();
 
-    _marker_tracker.ComputeImage(image_data);
+    _marker_tracker.ComputeImage(image_data, fixed_angle);
 
-    if(_debug) {
-        return { 
-          matched: _marker_tracker.Match(),
-          uuid:    _marker_tracker.GetMatchUuid(),
-          corners: _marker_tracker.GetPose(),
-          trained_corners:_marker_tracker.GetTrainedCorners(),
-          screen_corners: _marker_tracker.GetScreenCorners(),
-          matches: _marker_tracker.GetMatches(),
-          matches_mask: _marker_tracker.GetMatchesMask(),
-          profiles: _marker_tracker.GetProfiler(),
-          image_data: image_data  // warning, put this object at the end or it crashes (webworker only pas stringable objects through Postmessages)
-        };    
+    var matched = _marker_tracker.Match();
+    var result = {
+      matched: matched,
+      profiles: _marker_tracker.GetProfiler()
     }
-    else { // not debug
-      if (_marker_tracker.Match()) 
-        return { 
-          matched: true,
-          uuid:    _marker_tracker.GetMatchUuid(),
-          profiles: _marker_tracker.GetProfiler(),
-          corners: _marker_tracker.GetPose()
-        };
+    if (matched) {
+      result.uuid = _marker_tracker.GetMatchUuid();
+      result.corners = _marker_tracker.GetPose();
+    }
+    if (_debug) {
+      result.trained_corners = _marker_tracker.GetTrainedCorners();
+      result.screen_corners = _marker_tracker.GetScreenCorners();
+      result.matches = _marker_tracker.GetMatches();
+      result.matches_mask = _marker_tracker.GetMatchesMask();
+      result.image_data = image_data;
+    }
 
-      return { 
-        matched: false,
-        profiles: _marker_tracker.GetProfiler()
-      };  
-    }
+    return result;
+
+    // if(_debug) {
+    //     return { 
+    //       matched: ,
+    //       uuid:    _marker_tracker.GetMatchUuid(),
+    //       corners: _marker_tracker.GetPose(),
+    //       trained_corners:_marker_tracker.GetTrainedCorners(),
+    //       screen_corners: _marker_tracker.GetScreenCorners(),
+    //       matches: _marker_tracker.GetMatches(),
+    //       matches_mask: _marker_tracker.GetMatchesMask(),
+    //       profiles: _marker_tracker.GetProfiler(),
+    //       image_data: image_data  // warning, put this object at the end or it crashes (webworker only pas stringable objects through Postmessages)
+    //     };    
+    // }
+    // else { // not debug
+    //   if (_marker_tracker.Match()) 
+    //     return { 
+    //       matched: true,
+    //       uuid:    _marker_tracker.GetMatchUuid(),
+    //       profiles: _marker_tracker.GetProfiler(),
+    //       corners: _marker_tracker.GetPose()
+    //     };
+
+    //   return { 
+    //     matched: false,
+    //     profiles: _marker_tracker.GetProfiler()
+    //   };  
+    // }
   }
 
   function DetectTags(image) {
     return _tag_detector.detect(image);
   }
 
-  function OnNewImage(image) {
+  function OnNewImage(image, angle) {
     var tags;
     
     if (_tag_detector_enabled)
@@ -78,7 +98,7 @@ function MarkerDetector() {
 
     var marker;
     if (_marker_tracker_enabled)
-      marker = DetectMarkerImage(image);
+      marker = DetectMarkerImage(image, angle);
 
     return {
       tags: tags,
@@ -121,13 +141,18 @@ function MarkerDetector() {
     _debug=bool;
   }
 
-  function CmdOnNewImage(data)           { return OnNewImage(data.image); }
+  function UseFixedAngle(bool) {
+    _marker_tracker.UseFixedAngle(bool);
+  }
+
+  function CmdOnNewImage(data)           { return OnNewImage(data.image, data.angle); }
   function CmdAddMarker(data)            { AddMarker(data.image_data, data.uuid); }
   function CmdClear()                    { Clear(); }
   function CmdActiveAll(data)            { ActiveAll(data.value); }
   function CmdActive(data)               { Active(data.uuid, data.value); }
   function CmdEnableTagDetection(data)   { EnableTagDetection(data.value); }
   function CmdEnableImageDetection(data) { EnableImageDetection(data.value); }
+  function CmdUseFixedAngle(data)        { UseFixedAngle(data.value); }
 
   this.Command = Command;
   this.AddMarker = AddMarker;
@@ -138,4 +163,5 @@ function MarkerDetector() {
   this.EnableTagDetection = EnableTagDetection;
   this.ComputeImage = OnNewImage;
   this.SetDebug = SetDebug;
+  this.UseFixedAngle = UseFixedAngle;
 }

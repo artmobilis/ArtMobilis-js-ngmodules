@@ -60,6 +60,10 @@ angular.module('journey')
 
     var _channels_landmarks;
 
+    var _use_fixed_angle = false;
+
+    var _use_web_worker = true;
+
 
     var AddPOIMarkers = (function() {
 
@@ -144,14 +148,9 @@ angular.module('journey')
       }
     }
 
-    function StartCamera() {
-      CameraSvc.Start().catch(function(e) {
-      });
-    }
-
-    function StartMarkerDetector(use_web_worker) {
+    function StartMarkerDetector() {
       if (!MarkerDetectorSvc.Started()) {
-        MarkerDetectorSvc.Start(_camera_video_element, use_web_worker);
+        MarkerDetectorSvc.Start(_camera_video_element, _use_web_worker);
       }
     }
 
@@ -176,16 +175,16 @@ angular.module('journey')
       if (Started())
         return;
 
+      _use_web_worker = (typeof use_web_worker === 'boolean') ? use_web_worker : true;
+
       AddTasks(
         function() { return DataManagerSvc.GetLoadPromise(); },
-        StartCamera,
         function() {
           _loading = true;
 
-          StartMarkerDetector(use_web_worker);
+          JourneyManagerSvc.Reset();
 
-          JourneyManagerSvc.Start();
-
+          StartMarkerDetector();
           document.addEventListener('journey_mode_change', OnJourneyModeChange, false);
 
           document.addEventListener('device_move_xy', OnDeviceMove, false);
@@ -221,21 +220,19 @@ angular.module('journey')
 
       return AddTasks(function() {
         Reset();
-      
-        JourneyManagerSvc.Stop();
+
         document.removeEventListener('journey_mode_change', OnJourneyModeChange, false);
         document.removeEventListener('device_move_xy', OnDeviceMove, false);
         _orientation_control.Disconnect();
         _running = false;
         MarkerDetectorSvc.Stop();
-        CameraSvc.Stop();
 
       });
     }
 
-    function UpdateTracking() {
+    function UpdateTracking(angle) {
       //MarkerDetectorSvc.Empty();
-      MarkerDetectorSvc.Update();
+      MarkerDetectorSvc.Update(angle);
 
       var tags = MarkerDetectorSvc.GetTags();
       var marker_corners = MarkerDetectorSvc.GetMarker();
@@ -288,8 +285,14 @@ angular.module('journey')
             
       _orientation_control.Update();
 
-      if (JourneyManagerSvc.GetMode() === JourneyManagerSvc.MODE_POI)
-        UpdateTracking();
+      if (JourneyManagerSvc.GetMode() === JourneyManagerSvc.MODE_POI) {
+        if (_use_fixed_angle) {
+          var alpha = _orientation_control.alpha - Math.PI / 2;
+          UpdateTracking(alpha);
+        }
+        else
+          UpdateTracking();
+      }
 
       AMTHREE.UpdateAnimatedTextures(_scene);
     }
@@ -349,6 +352,25 @@ angular.module('journey')
       _tracked_obj_manager.Clear();
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Sets whether corner orientation should be computed, or if the angle is given for each image.
+    * @param {boolean} bool - If false, corner orientation is computed, which is the default behaviour.
+    */
+    function DetectionUseFixedAngle(bool) {
+      if (bool !== _use_fixed_angle) {
+        MarkerDetectorSvc.UseFixedAngle(bool);
+        _use_fixed_angle = bool;
+        if (_running) {
+          Stop();
+          window.setTimeout(function() {
+            Start(_use_web_worker);
+          }, 0);
+        }
+      }
+    }
+
     this.Start = Start;
     this.Started = Started;
     this.Stop = Stop;
@@ -356,6 +378,7 @@ angular.module('journey')
     this.GetUserBody = GetUserBody;
     this.GetUserHead = GetUserHead;
     this.GetScene = GetScene;
+    this.DetectionUseFixedAngle = DetectionUseFixedAngle;
   }
 
   return JourneySceneSvc;

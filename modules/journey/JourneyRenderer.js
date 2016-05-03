@@ -45,11 +45,12 @@
 
       var _camera_video_element = CameraSvc.GetVideoElement();
 
-      var _debug_enabled = true; // display corners and matching result
+      var _debug_enabled = false; // display corners and matching result
       var _continuous_debug_display=true;
       var _matching_persistence=30;
       var _matching_display=0;
       var _marker_corners;
+      var _last_matching_uuid;
       var _image_debugger = new AM.ImageDebugger();
       _image_debugger.SetData(_ctx2d, CameraSvc.GetVideoElement(), _debug_enabled);
 
@@ -103,7 +104,8 @@
         _image_debugger.DrawCorners(marker_corners);
 
         // an image marker has been found
-        if (marker_corners.matched || _continuous_debug_display) {
+        // if (marker_corners.matched || _continuous_debug_display) {
+        if (marker_corners.matched) {
           _matching_display=_matching_persistence;
           _last_matching_uuid =marker_corners.uuid;
         }
@@ -174,6 +176,7 @@
       */
       function SetDebug(bool) {
         _debug_enabled = bool;
+        _image_debugger.SetDebug(bool);
       }
 
       /**
