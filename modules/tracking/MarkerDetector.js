@@ -40,7 +40,8 @@ function MarkerDetector() {
     var result = {
       matched: matched,
       profiles: _marker_tracker.GetProfiler()
-    }
+    };
+
     if (matched) {
       result.uuid = _marker_tracker.GetMatchUuid();
       result.corners = _marker_tracker.GetPose();
@@ -51,6 +52,7 @@ function MarkerDetector() {
       result.matches = _marker_tracker.GetMatches();
       result.matches_mask = _marker_tracker.GetMatchesMask();
       result.image_data = image_data;
+      result.last_uuid = _marker_tracker.GetLastUuid();
     }
 
     return result;
