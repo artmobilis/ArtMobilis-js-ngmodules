@@ -163,7 +163,7 @@ angular.module('journey')
     }
 
     function OnDeviceMove(e) {
-      var vec = new Vector3(e.detail.x - _user_body.position.x, 0, e.detail.y - _user_body.position.z);
+      var vec = new THREE.Vector3(e.detail.x - _user_body.position.x, 0, e.detail.y - _user_body.position.z);
       _tracked_obj_manager.MoveEnabledObjects(vec);
       _user_body.position.x = e.detail.x;
       _user_body.position.z = e.detail.y;
