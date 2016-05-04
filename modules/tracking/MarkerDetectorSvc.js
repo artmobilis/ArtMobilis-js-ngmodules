@@ -6,7 +6,7 @@
     var ratio_w = target_size / width;
     var ratio_h = target_size / height;
 
-    var ratio = Math.min(ratio_w, ratio_h, 1);
+    var ratio = Math.min(Math.max(ratio_w, ratio_h), 1);
     return { width: Math.round(width * ratio), height: Math.round(height * ratio) };
   }
 
@@ -37,7 +37,7 @@
     var _use_fixed_angle = false;
 
 
-    this.video_size_target = 210;
+    this.video_size_target = 300;
 
     this.position = new THREE.Vector3();
     this.rotation = new THREE.Euler();

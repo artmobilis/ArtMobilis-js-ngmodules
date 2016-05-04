@@ -19,13 +19,13 @@ function MarkerDetector() {
   };
 
   _marker_tracker.SetParameters({
-    laplacian_threshold:   30,
+    laplacian_threshold:   20,
     eigen_threshold:       25,
-    detection_corners_max: 200,
+    detection_corners_max: 1000,
     match_threshold:       40,
     num_train_levels:      3,
-    image_size_max:        256,
-    training_corners_max:  150,
+    image_size_max:        300,
+    training_corners_max:  400,
     blur:                  true,
     blur_size:             5
   });
