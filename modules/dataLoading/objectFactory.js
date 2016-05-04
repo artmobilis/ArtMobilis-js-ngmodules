@@ -8,6 +8,13 @@ angular.module('dataLoading')
 
 .factory('objectFactory', [function() {
 
+    /**
+    * Returns an object containing the contents of a channel, with their respective transforms.
+    * @memberof angular_module.dataLoading.objectFactory
+    * @param {string} channel_id
+    * @param {Journey} data
+    * @returns {THREE.Object3D}
+    */
     function BuildChannelContents(channel_id, data) {
 
       var channel = data.channels[channel_id];
