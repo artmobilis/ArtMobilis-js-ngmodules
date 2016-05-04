@@ -47,7 +47,9 @@ angular.module('journey')
 
     var _tracked_obj_manager = new AMTHREE.TrackedObjManager( {
       camera: _user_head,
-      lerp_factor: 0.05,
+      lerp_track_factor: 0.01,
+      lerp_update_factor: 0.3,
+      damping_factor: 0.9,
       timeout: 10
     } );
 
@@ -161,6 +163,8 @@ angular.module('journey')
     }
 
     function OnDeviceMove(e) {
+      var vec = new Vector3(e.detail.x - _user_body.position.x, 0, e.detail.y - _user_body.position.z);
+      _tracked_obj_manager.MoveEnabledObjects(vec);
       _user_body.position.x = e.detail.x;
       _user_body.position.z = e.detail.y;
     }
