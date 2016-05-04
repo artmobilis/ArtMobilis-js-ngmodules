@@ -40,7 +40,7 @@ function MarkerDetector() {
     var result = {
       matched: matched,
       profiles: _marker_tracker.GetProfiler()
-    }
+    };
     if (matched) {
       result.uuid = _marker_tracker.GetMatchUuid();
       result.corners = _marker_tracker.GetPose();
