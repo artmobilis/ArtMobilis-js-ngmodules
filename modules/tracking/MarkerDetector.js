@@ -48,6 +48,7 @@ function MarkerDetector() {
     }
     if (_debug) {
       result.trained_corners = _marker_tracker.GetTrainedCorners();
+      result.trained_descriptors = _marker_tracker.GetTrainedDescriptors();
       result.screen_corners = _marker_tracker.GetScreenCorners();
       result.matches = _marker_tracker.GetMatches();
       result.matches_mask = _marker_tracker.GetMatchesMask();
