@@ -41,16 +41,19 @@ function MarkerDetector() {
       matched: matched,
       profiles: _marker_tracker.GetProfiler()
     };
+
     if (matched) {
       result.uuid = _marker_tracker.GetMatchUuid();
       result.corners = _marker_tracker.GetPose();
     }
     if (_debug) {
       result.trained_corners = _marker_tracker.GetTrainedCorners();
+      result.trained_descriptors = _marker_tracker.GetTrainedDescriptors();
       result.screen_corners = _marker_tracker.GetScreenCorners();
       result.matches = _marker_tracker.GetMatches();
       result.matches_mask = _marker_tracker.GetMatchesMask();
       result.image_data = image_data;
+      result.last_uuid = _marker_tracker.GetLastUuid();
     }
 
     return result;
