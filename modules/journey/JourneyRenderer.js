@@ -104,13 +104,18 @@
         _image_debugger.DrawCorners(marker_corners);
 
         // an image marker has been found
-        // if (marker_corners.matched || _continuous_debug_display) {
         if (marker_corners.matched) {
           _matching_display=_matching_persistence;
           _last_matching_uuid =marker_corners.uuid;
         }
+        else if (_continuous_debug_display)
+        {
+           // visualise matched corners when matching fail
+          _matching_display=_matching_persistence;
+          _last_matching_uuid =marker_corners.last_uuid;
+        }
 
-        if(_matching_display){
+        if(_matching_display && _last_matching_uuid !== undefined){
           var data_journey = DataManagerSvc.GetData();
           var channel = data_journey.channels[_last_matching_uuid];
           var url = data_journey.markers[channel.marker].url;
