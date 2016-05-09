@@ -202,6 +202,9 @@
 
         AM.LoadImage(url).then(function(url, uuid) {
           return function(image) {
+            if (!_started)
+              return;
+
             var image_data = AM.ImageToImageData(image, true);
 
             if (_use_web_worker) {
