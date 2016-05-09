@@ -104,6 +104,9 @@ angular.module('journey')
           var channel = channels[channel_uuid];
           var marker = markers[channel.marker];
 
+          if (!marker)
+            continue;
+
           if (marker.type === 'img')
             MarkerDetectorSvc.AddMarker(marker.url, channel_uuid);
 
@@ -253,7 +256,7 @@ angular.module('journey')
           var poi_channel = poi_channels[i2];
           var channel = channels[poi_channel.uuid];
           var marker = markers[channel.marker];
-          if (marker.type === 'tag' && marker.tag_id === tag.id) {
+          if (marker && marker.type === 'tag' && marker.tag_id === tag.id) {
             MarkerDetectorSvc.SetTransform(tag);
             _tracked_obj_manager.TrackCompose(poi_channel.uuid,
               MarkerDetectorSvc.position,
