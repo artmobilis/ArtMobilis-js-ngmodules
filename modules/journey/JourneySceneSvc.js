@@ -66,6 +66,8 @@ angular.module('journey')
 
     var _use_web_worker = true;
 
+    var _device_mode = true;
+
 
     var AddPOIMarkers = (function() {
 
@@ -294,7 +296,8 @@ angular.module('journey')
 
       if (JourneyManagerSvc.GetMode() === JourneyManagerSvc.MODE_POI) {
         if (_use_fixed_angle) {
-          var alpha = _orientation_control.alpha - Math.PI / 2;
+          // var alpha = (_device_mode) ? (_orientation_control.alpha - Math.PI / 2) : 0;
+          var alpha = 0;
           UpdateTracking(alpha);
         }
         else
@@ -378,6 +381,16 @@ angular.module('journey')
       }
     }
 
+    /**
+    * Enables or disables the device mode. If fixed angle mode enabled, the angle used is the device's, 0 otherwise.
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @param {boolean} bool
+    */
+    function SetDeviceMode(bool) {
+      _device_mode = bool;
+    }
+
     this.Start = Start;
     this.Started = Started;
     this.Stop = Stop;
@@ -386,6 +399,7 @@ angular.module('journey')
     this.GetUserHead = GetUserHead;
     this.GetScene = GetScene;
     this.DetectionUseFixedAngle = DetectionUseFixedAngle;
+    this.SetDeviceMode = SetDeviceMode;
   }
 
   return JourneySceneSvc;
