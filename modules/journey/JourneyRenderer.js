@@ -9,12 +9,14 @@
     'DataManagerSvc',
     'JourneyManagerSvc',
     'MarkerDetectorSvc',
+    'debug_globals',
     function(
       JourneySceneSvc,
       CameraSvc,
       DataManagerSvc,
       JourneyManagerSvc,
-      MarkerDetectorSvc) {
+      MarkerDetectorSvc,
+      debug_globals) {
 
 
     /**
