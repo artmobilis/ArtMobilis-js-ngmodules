@@ -296,8 +296,11 @@ angular.module('journey')
 
       if (JourneyManagerSvc.GetMode() === JourneyManagerSvc.MODE_POI) {
         if (_use_fixed_angle) {
-          // var alpha = (_device_mode) ? (_orientation_control.alpha - Math.PI / 2) : 0;
           var alpha = 0;
+          if (_device_mode) {
+            var half_pi = Math.PI / 2;
+            alpha = half_pi * (Math.round(_orientation_control.alpha / half_pi) - 1);
+          }
           UpdateTracking(alpha);
         }
         else
