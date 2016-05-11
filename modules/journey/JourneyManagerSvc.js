@@ -245,7 +245,7 @@ angular.module('journey')
       var obj = objects[channel.object];
       if (typeof obj !== 'undefined') {
         obj = obj.clone();
-        var position = CoordinatesConverterSvc.ConvertLocalCoordinates(channel.longitude, channel.latitude);
+        var position = CoordinatesConverterSvc.ConvertLocalCoordinates(channel.latitude, channel.longitude);
         obj.position.x = position.x;
         obj.position.z = position.y;
         obj.y = channel.altitude || 0;
