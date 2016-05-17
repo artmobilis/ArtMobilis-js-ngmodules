@@ -41,17 +41,6 @@ angular.module('dataLoading')
     };
   }
 
-  function poiChannelToJSON(name) {
-    return {
-      uuid: this.uuid,
-      object: this.object,
-      longitude: this.longitude,
-      latitude: this.latitude,
-      altitude: this.altitude,
-      scale: this.scale
-    };
-  }
-
   function poiObjectToJSON(name) {
     return {
       uuid: this.uuid,
@@ -75,22 +64,15 @@ angular.module('dataLoading')
     poi.objects.push(new_obj);
   }
   
-  function AddChannel(poi, uuid, object, longitude, latitude, altitude, scale) {
+  function AddChannel(poi, uuid) {
     var found = poi.channels.find(function(elem) {
       return elem.uuid === uuid;
     });
 
     if (!found) {
       var new_chan = {
-        uuid: uuid,
-        object: object,
-        longitude: longitude || 0,
-        latitude: latitude || 0,
-        altitude: altitude || 0,
-        scale: scale || 1,
-        toJSON: poiChannelToJSON
+        uuid: uuid
       };
-      new_chan.position = CoordinatesConverterSvc.ConvertLocalCoordinates(latitude, longitude);
       poi.channels.push(new_chan);
     }
     return !found;
@@ -130,8 +112,7 @@ angular.module('dataLoading')
       for (i = 0, c = channels.length; i < c; ++i) {
         var channel = channels[i];
         if (typeof channel.uuid !== 'undefined') {
-          AddChannel(poi, channel.uuid, channel.object, channel.longitude,
-            channel.latitude, channel.altitude, channel.scale);
+          AddChannel(poi, channel.uuid);
         }
         else
           console.warn('failed to add channel to POI: uuid undefined');
