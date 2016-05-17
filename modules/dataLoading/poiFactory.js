@@ -25,9 +25,7 @@ angular.module('dataLoading')
    * @property {object[]} objects
    * @property {value} objects[].uuid
    * @property {string} objects[].name
-   * @property {number} objects[].latitude
-   * @property {number} objects[].longitude
-   * @property {number} objects[].altitude
+   * @property {Point3D} objects[].position
    * @property {Point3D} objects[].rotation
    * @property {Point3D} objects[].scale
    */
@@ -57,27 +55,23 @@ angular.module('dataLoading')
   function poiObjectToJSON(name) {
     return {
       uuid: this.uuid,
-      longitude: this.longitude,
-      latitude: this.latitude,
-      altitude: this.altitude,
+      name: this.name,
+      position: this.position,
       rotation: this.rotation,
       scale: this.scale
     };
   }
 
-  function AddObject(poi, uuid, name, longitude, latitude, altitude, rotation, scale) {
+  function AddObject(poi, uuid, name, position, rotation, scale) {
     var new_obj = {
       uuid: uuid,
       name: name || 'unnamed object',
-      latitude: latitude || 0,
-      longitude: longitude || 0,
-      altitude: altitude || 0,
+      position: ClonePoint3D(position),
       rotation: ClonePoint3D(rotation),
       scale: ClonePoint3D(scale, 1),
       toJSON: poiObjectToJSON
     };
 
-    new_obj.position = CoordinatesConverterSvc.ConvertLocalCoordinates(latitude, longitude);
     poi.objects.push(new_obj);
   }
   
@@ -130,7 +124,7 @@ angular.module('dataLoading')
       objects: [],
       toJSON: toJSON
     };
-    poi.position = CoordinatesConverterSvc.ConvertLocalCoordinates(poi.latitude, poi.longitude);
+    UpdatePosition(poi);
 
     if (channels) {
       for (i = 0, c = channels.length; i < c; ++i) {
@@ -148,7 +142,7 @@ angular.module('dataLoading')
       for (i = 0, c = objects.length; i < c; ++i) {
         var o = objects[i];
         if (typeof o.uuid !== 'undefined') {
-          AddObject(poi, o.uuid, o.name, o.longitude, o.latitude, o.altitude, o.rotation, o.scale);
+          AddObject(poi, o.uuid, o.name, o.position, o.rotation, o.scale);
         }
       }
     }
@@ -197,23 +191,49 @@ angular.module('dataLoading')
   function ToObject3D(poi, objects) {
     var container = new THREE.Object3D();
 
-    for (var i = 0, c = poi.objects.length; c < i; ++i) {
+    for (var i = 0, c = poi.objects.length; i < c; ++i) {
       var elem = poi.objects[i];
       var object = objects[elem.uuid];
       if (object) {
         var clone = object.clone();
-        clone.position.x = elem.position.x;
-        clone.position.z = elem.position.y;
-        clone.position.y = elem.altitude;
+        PointToVec(elem.position, clone.position);
         PointToVec(elem.rotation, clone.rotation);
         PointToVec(elem.scale, clone.scale);
         clone.name = elem.name;
+        clone.userData = { index: i };
         container.add(clone);
       }
     }
 
+    var position = CoordinatesConverterSvc.ConvertLocalCoordinates(poi.latitude, poi.longitude);
+    container.position.x = position.x;
+    container.position.z = position.y;
+
     container.name = poi.name;
     return container;
+  }
+
+  function UpdatePosition(poi) {
+    poi.position = CoordinatesConverterSvc.ConvertLocalCoordinates(poi.latitude, poi.longitude);
+  }
+
+  function CreateBoundsObject() {
+    var points = [];
+    points.push(new THREE.Vector2(1, 0));
+    points.push(new THREE.Vector2(1.1, 2));
+    points.push(new THREE.Vector2(1.2, 2));
+    points.push(new THREE.Vector2(1.3, 0));
+    var geometry = new THREE.LatheGeometry(points, 64);
+    var material = new THREE.MeshBasicMaterial( {
+      color: 0x41A3DC,
+      opacity: 0.5,
+      transparent: true,
+      side: THREE.BackSide
+    } );
+    var obj = new THREE.Mesh(geometry, material);
+    obj.position.y = -3;
+
+    return obj;
   }
 
   return {
@@ -224,7 +244,9 @@ angular.module('dataLoading')
     ParseArray: ParseArray,
     AddChannel: AddChannel,
     AddObject: AddObject,
-    ToObject3D: ToObject3D
+    ToObject3D: ToObject3D,
+    UpdatePosition: UpdatePosition,
+    CreateBoundsObject: CreateBoundsObject
   };
 
 
