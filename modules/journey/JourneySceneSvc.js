@@ -133,6 +133,8 @@ angular.module('journey')
 
       _channels_landmarks = JourneyManagerSvc.GetPOIChannelsLandmarks();
       _scene.add(_channels_landmarks);
+      AMTHREE.PlayAnimatedTextures(_channels_landmarks);
+      AMTHREE.PlaySounds(_channels_landmarks);
     }
 
     function OnExitPOI() {
@@ -357,6 +359,10 @@ angular.module('journey')
     }
 
     function Reset() {
+      if (_channels_landmarks) {
+        AMTHREE.StopAnimatedTextures(_channels_landmarks);
+        AMTHREE.StopSounds(_channels_landmarks);
+      }
       _scene.remove(_poi_limit_obj);
       _scene.remove(_channels_landmarks);
       _channels_landmarks = undefined;
