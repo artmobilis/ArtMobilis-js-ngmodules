@@ -230,34 +230,6 @@ angular.module('journey')
   }
 
   /**
-  * Returns a new object containing the landmarks of the channels of the current POIs.
-  * @memberOf angular_module.journey.JourneyManagerSvc
-  * @returns {THREE.Object3D}
-  */
-  function GetPOIChannelsLandmarks() {
-    var poi = _current_poi;
-
-    var landmarks = new THREE.Object3D();
-    var objects = DataManagerSvc.GetData().objects;
-
-    for (var i = 0, c = poi.channels.length; i < c; ++i) {
-      var channel = poi.channels[i];
-      var obj = objects[channel.object];
-      if (typeof obj !== 'undefined') {
-        obj = obj.clone();
-        var position = CoordinatesConverterSvc.ConvertLocalCoordinates(channel.latitude, channel.longitude);
-        obj.position.x = position.x;
-        obj.position.z = position.y;
-        obj.y = channel.altitude || 0;
-        obj.scale.x = obj.scale.y = obj.scale.z = channel.scale || 1;
-        landmarks.add(obj);
-      }
-    }
-
-    return landmarks;
-  }
-
-  /**
   * Enable or disable the mode JourneyManagerSvc.MODE_NAVIGATION_FORCED.
   * @memberOf angular_module.journey.JourneyManagerSvc
   * @param {bool} force_navigation
@@ -283,7 +255,6 @@ angular.module('journey')
   this.Stop = Stop;
   this.Running = Running;
   this.GetPOILandmarks = GetPOILandmarks;
-  this.GetPOIChannelsLandmarks = GetPOIChannelsLandmarks;
   this.ForceNavigationMode = ForceNavigationMode;
 
   
