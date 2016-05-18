@@ -27,6 +27,10 @@ angular.module('data')
     this.name = name || '';
   }
 
+  Data.prototype.Clear = function() {
+    this.name = '';
+  };
+
   Data.prototype.Set = function(uuid, name) {
     if (typeof uuid !== 'undefined')
       this.uuid = uuid;
@@ -65,17 +69,17 @@ angular.module('data')
   Marker.prototype.constructor = Marker;
 
   Marker.prototype.Set = function(uuid, name, type, url, tag_id) {
-    Data.Set.call(this, uuid, name || 'unnamed marker');
+    Data.prototype.Set.call(this, uuid, name || 'unnamed marker');
 
-    this.type = type || 'img',
-    this.url = url || '',
+    this.type = type || 'img';
+    this.url = url || '';
     this.tag_id = tag_id;
 
     return this;
   };
 
   Marker.prototype.ToJson = function() {
-    var result = Data.ToJson.call(this);
+    var result = Data.prototype.ToJson.call(this);
 
     result.type = this.type;
     result.url = AMTHREE.ASSET_PATH + AMTHREE.IMAGE_PATH + GetFilename(this.url);
@@ -167,6 +171,16 @@ angular.module('data')
     object.position.set(this.position.x, this.position.y, this.position.z);
     object.rotation.set(this.rotation.x, this.rotation.y, this.rotation.z);
     object.scale.set(this.scale.x, this.scale.y, this.scale.z);
+
+    object.userData.object_transform = this;
+
+    return object;
+  };
+
+  ObjectTransform.prototype.Update = function(object) {
+    this.position = ClonePoint3D(object.position);
+    this.rotation = ClonePoint3D(object.rotation);
+    this.scale    = ClonePoint3D(object.scale, 1);
   };
 
 
@@ -186,10 +200,11 @@ angular.module('data')
   Channel.prototype.constructor = Channel;
 
   Channel.prototype.Set = function(uuid, name, marker, contents) {
-    Data.Set.call(this, uuid, name);
+    Data.prototype.Set.call(this, uuid, name);
 
     this.marker = marker;
-    this.contents = contents.slice(0);
+    if (contents instanceof Array)
+      this.contents = contents.slice(0);
     return this;
   };
 
@@ -199,7 +214,7 @@ angular.module('data')
   };
 
   Channel.prototype.ToJson = function() {
-    var result = Data.ToJson.call(this);
+    var result = Data.prototype.ToJson.call(this);
 
     result.marker = this.marker;
     result.contents = this.contents.map(function(c) {
@@ -224,19 +239,19 @@ angular.module('data')
   };
 
   Channel.prototype.BuildContents = function(objects) {
-      var objects_transforms = this.contents;
+    var objects_transforms = this.contents;
 
-      var container = new THREE.Object3D();
+    var container = new THREE.Object3D();
 
-      for (var i = 0, c = objects_transforms.length; i < c; ++i) {
-        var transform = objects_transforms[i];
+    for (var i = 0, c = objects_transforms.length; i < c; ++i) {
+      var transform = objects_transforms[i];
 
-        var object = transform.ApplyTransform(objects);
-        if (object)
-          container.add(object);
-      }
+      var object = transform.ApplyTransform(objects);
+      if (object)
+        container.add(object);
+    }
 
-      return container;
+    return container;
   };
 
 
@@ -250,7 +265,7 @@ angular.module('data')
 
   PoiChannel.prototype.ToJson = function() {
     return {
-      uuid: this.uuid;
+      uuid: this.uuid
     };
   };
 
@@ -272,36 +287,28 @@ angular.module('data')
     this.longitude = longitude || 0;
     this.radius = radius || 10;
 
-    this.channels = channels.filter(function(c, index) {
-      var valid = (typeof c.uuid !== 'undefined');
-      if (!valid)
-        console.warn('Poi: cant add PoiChannel ' + index + ': uuid undefined');
-      return valid;
-    })
-    .map(function(c) {
-      return new PoiChannel(c.uuid);
-    });
-
-    this.objects = objects.filter(function(o, index) {
-      var valid = (typeof o.uuid !== 'undefined');
-      if (!valid)
-        console.warn('Poi: cant add ObjectTranform ' + index + ': uuid undefined');
-      return valid;
-    })
-    .map(function(o) {
-      return new ObjectTransform(o.uuid, o.name, o.position, o.rotation, o.scale);
-    });
+    if (channels instanceof Array)
+      this.channels = channels.slice(0);
+    else
+      this.channels = [];
+    if (objects instanceof Array)
+      this.objects = objects.slice(0);
+    else
+      this.objects = [];
   }
 
   Poi.prototype = Object.create(Data.prototype);
   Poi.prototype.constructor = Poi;
 
   Poi.prototype.Set = function(uuid, name, latitude, longitude, radius, channels, objects) {
-    Data.Set.call(this, uuid, name);
+    Data.prototype.Set.call(this, uuid, name);
 
-    this.latitude = latitude || 0;
-    this.longitude = longitude || 0;
-    this.radius = radius || 10;
+    if (typeof latitude === 'number')
+      this.latitude = latitude;
+    if (typeof longitude === 'number')
+      this.longitude = longitude;
+    if (typeof radius === 'number')
+      this.radius = radius;
 
     if (channels instanceof Array)
       this.channels = channels.slice(0);
@@ -311,7 +318,7 @@ angular.module('data')
   };
 
   Poi.prototype.ToJson = function() {
-    var result = Data.ToJson.call(this);
+    var result = Data.prototype.ToJson.call(this);
 
     result.latitude = this.latitude;
     result.longitude = this.longitude;
@@ -331,7 +338,7 @@ angular.module('data')
     if (typeof json.channels !== 'undefined') {
       if (json.channels instanceof Array) {
         channels = json.channels.filter(new DataFilter('PoiChannel')).map(function(e) {
-          return (new PoiChannel).FromJson(e);
+          return new PoiChannel(e.uuid);
         });
       }
       else
@@ -365,6 +372,55 @@ angular.module('data')
     this.objects.push(object_transform);
   };
 
+  Poi.prototype.CreateBoundsObject = function() {
+    var points = [];
+    var width = 2;
+    var height = 2;
+
+    var step = width / 3;
+    var i = this.radius;
+
+    points.push(new THREE.Vector2(i, 0));
+    i += step;
+    points.push(new THREE.Vector2(i, height));
+    i += step;
+    points.push(new THREE.Vector2(i, height));
+    i += step;
+    points.push(new THREE.Vector2(i, 0));
+    var geometry = new THREE.LatheGeometry(points, 64);
+    var material = new THREE.MeshBasicMaterial( {
+      color: 0x41A3DC,
+      opacity: 0.5,
+      transparent: true,
+      side: THREE.BackSide
+    } );
+    var position = CoordinatesConverterSvc.ConvertLocalCoordinates(poi.latitude, poi.longitude);
+    var obj = new THREE.Mesh(geometry, material);
+    obj.position.x = position.x;
+    obj.position.z = position.y;
+    obj.position.y = -3;
+
+    return obj;
+  };
+
+  Poi.prototype.CreateScene = function(objects) {
+    var container = new THREE.Object3D();
+
+    for (var i = 0, c = poi.objects.length; i < c; ++i) {
+      var elem = poi.objects[i];
+      var object = elem.ApplyTransform(objects);
+    }
+
+    var position = CoordinatesConverterSvc.ConvertLocalCoordinates(poi.latitude, poi.longitude);
+    container.position.x = position.x;
+    container.position.z = position.y;
+
+    container.name = poi.name;
+    container.userData.poi = this;
+
+    return container;
+  };
+
 
   /**
   *
@@ -380,31 +436,34 @@ angular.module('data')
       this.pois = pois.slice(0);
     else
       this.pois = [];
-  };
+  }
 
   Journey.prototype = Object.create(Data.prototype);
   Journey.prototype.constructor = Journey;
 
+  Journey.prototype.Clear = function() {
+    Data.prototype.Clear.call(this);
+    this.pois.length = 0;
+  };
+
   Journey.prototype.Set = function(uuid, name, pois) {
-    Data.Set.call(this, uuid, name);
+    Data.prototype.Set.call(this, uuid, name);
 
     if (pois instanceof Array)
       this.pois = pois.slice(0);
   };
 
   Journey.prototype.ToJson = function() {
-    var result = Data.ToJson.call(this);
+    var result = Data.prototype.ToJson.call(this);
     result.pois = this.pois.slice(0);
     return result;
   };
 
   Journey.prototype.FromJson = function(json) {
-    var pois = [];
+    var pois;
     if (typeof json.pois !== 'undefined') {
       if (json.pois instanceof Array) {
-        pois = json.pois.filter(new DataFilter('POI')).map(function(e) {
-          return (new Poi()).FromJson(e);
-        });
+        pois = json.pois;
       }
       else
         console.warn('failed to add POIs: not an array');
@@ -432,6 +491,14 @@ angular.module('data')
     this.markers = [];
     this.objects = [];
   }
+
+  DataJourney.prototype.Clear = function() {
+    this.journey.Clear();
+    this.pois.length = 0;
+    this.channels.length = 0;
+    this.markers.length = 0;
+    this.objects.length = 0;
+  };
 
   DataJourney.prototype.Set = function(journey, pois, channels, markers, objects) {
     if (typeof journey !== 'undefined')
@@ -479,6 +546,7 @@ angular.module('data')
 
 
   return {
+    Data: Data,
     ObjectTransform: ObjectTransform,
     PoiChannel: PoiChannel,
     Marker: Marker,
