@@ -194,42 +194,6 @@ angular.module('journey')
   }
 
   /**
-  * Returns a new object containing the landmarks of all the POIs.
-  * @memberOf angular_module.journey.JourneyManagerSvc
-  * @returns {THREE.Object3D}
-  */
-  function GetPOILandmarks() {
-    var object = new THREE.Object3D();
-
-    var pois = DataManagerSvc.GetData().pois;
-    var objects = DataManagerSvc.GetData().objects;
-
-    for (var poi_id in pois) {
-      var poi = pois[poi_id];
-
-      if (poi.landmark) {
-        var landmark_obj = objects[poi.landmark.object];
-        if (!landmark_obj)
-          continue;
-
-        landmark_obj = landmark_obj.clone();
-        if (poi.landmark.height) landmark_obj.position.y = poi.landmark.height;
-        landmark_obj.position.x = poi.position.x;
-        landmark_obj.position.z = poi.position.y;
-        if (poi.landmark.scale) {
-          landmark_obj.scale.x = poi.landmark.scale;
-          landmark_obj.scale.y = poi.landmark.scale;
-          landmark_obj.scale.z = poi.landmark.scale;
-        }
-
-        object.add(landmark_obj);
-      }
-    }
-
-    return object;
-  }
-
-  /**
   * Enable or disable the mode JourneyManagerSvc.MODE_NAVIGATION_FORCED.
   * @memberOf angular_module.journey.JourneyManagerSvc
   * @param {bool} force_navigation
@@ -254,7 +218,6 @@ angular.module('journey')
   this.Start = Start;
   this.Stop = Stop;
   this.Running = Running;
-  this.GetPOILandmarks = GetPOILandmarks;
   this.ForceNavigationMode = ForceNavigationMode;
 
   
