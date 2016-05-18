@@ -1,6 +1,6 @@
 angular.module('data')
 
-.factory('journeyTypes', [function() {
+.factory('journeyType', [function() {
 
   /**
   * typedef {string} Uuid
