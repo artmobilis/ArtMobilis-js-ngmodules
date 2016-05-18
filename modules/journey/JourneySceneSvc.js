@@ -13,8 +13,7 @@ angular.module('journey')
   'MarkerDetectorSvc',
   'CameraSvc',
   'LoadingSvc',
-  'objectFactory',
-  'dataJourneyFactory',
+  'journeyType',
   (function() {
 
   function JourneySceneSvc(
@@ -23,8 +22,7 @@ angular.module('journey')
     MarkerDetectorSvc,
     CameraSvc,
     LoadingSvc,
-    objectFactory,
-    dataJourneyFactory) {
+    journeyType) {
 
 
     var _camera_video_element = CameraSvc.GetVideoElement();
@@ -55,9 +53,8 @@ angular.module('journey')
       timeout: 10
     } );
 
-    var _poi_limit_obj = dataJourneyFactory.poiFactory.CreateBoundsObject();
-
-    var _poi_landmarks;
+    var _poi_limit_obj = new THREE.Object3D();
+    _scene.add(_poi_limit_obj);
 
     var _poi_objects;
 
@@ -111,7 +108,7 @@ angular.module('journey')
           if (marker.type === 'img')
             MarkerDetectorSvc.AddMarker(marker.url, channel_uuid);
 
-          var object = objectFactory.BuildChannelContents(channel_uuid, DataManagerSvc.GetData());
+          var object = channel.BuildContents(data_journey.objects);
 
           _tracked_obj_manager.Add(object, channel_uuid,
             new Adder(channel_uuid), new Remover(channel_uuid));
@@ -126,12 +123,9 @@ angular.module('journey')
       var poi = JourneyManagerSvc.GetCurrentPOI();
       var objects = DataManagerSvc.GetData().objects;
 
-      _poi_limit_obj.scale.x = _poi_limit_obj.scale.z = poi.radius;
-      _poi_limit_obj.position.x = poi.position.x;
-      _poi_limit_obj.position.z = poi.position.y;
-      _scene.add(_poi_limit_obj);
+      _poi_limit_obj.add(poi.CreateBoundsObject());
 
-      _poi_objects = dataJourneyFactory.poiFactory.ToObject3D(poi, objects);
+      _poi_objects = poi.CreateScene(objects);
       _scene.add(_poi_objects);
       AMTHREE.PlayAnimatedTextures(_poi_objects);
       AMTHREE.PlaySounds(_poi_objects);
@@ -161,12 +155,6 @@ angular.module('journey')
       if (!MarkerDetectorSvc.Started()) {
         MarkerDetectorSvc.Start(_camera_video_element, _use_web_worker);
       }
-    }
-
-    function SetPOILandmarks() {
-      _scene.remove(_poi_landmarks);
-      _poi_landmarks = JourneyManagerSvc.GetPOILandmarks();
-      _scene.add(_poi_landmarks);
     }
 
     function OnDeviceMove(e) {
@@ -363,7 +351,7 @@ angular.module('journey')
         AMTHREE.StopAnimatedTextures(_poi_objects);
         AMTHREE.StopSounds(_poi_objects);
       }
-      _scene.remove(_poi_limit_obj);
+      _poi_limit_obj.remove.apply(_poi_limit_obj, _poi_limit_obj.children);
       _scene.remove(_poi_objects);
       _poi_objects = undefined;
 
