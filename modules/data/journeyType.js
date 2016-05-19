@@ -1,3 +1,8 @@
+/**
+* @class angular_module.data.journeyType
+* @memberOf angular_module.data
+*/
+
 angular.module('data')
 
 .factory('journeyType', ['CoordinatesConverterSvc', function(CoordinatesConverterSvc) {
@@ -15,9 +20,13 @@ angular.module('data')
 
 
   /**
-  *
+  * Base class
+  * @class angular_module.data.journeyType.Data
+  * @memberOf angular_module.data.journeyType
   * @param {Uuid} [uuid]
   * @param {string} [name]
+  * @property {Uuid} uuid
+  * @property {string} name
   */
   function Data(uuid, name) {
     if (typeof uuid !== 'undefined')
@@ -27,10 +36,23 @@ angular.module('data')
     this.name = name || '';
   }
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Data#
+  * @function Clear
+  */
   Data.prototype.Clear = function() {
     this.name = '';
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Data#
+  * @function Set
+  * @param {Uuid} uuid
+  * @param {string} name
+  * @returns {angular_module.data.journeyType.Data} this
+  */
   Data.prototype.Set = function(uuid, name) {
     if (typeof uuid !== 'undefined')
       this.uuid = uuid;
@@ -39,6 +61,12 @@ angular.module('data')
     return this;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Data#
+  * @function ToJson
+  * @returns {object} json object
+  */
   Data.prototype.ToJson = function() {
     return {
       uuid: this.uuid,
@@ -46,6 +74,13 @@ angular.module('data')
     };
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Data#
+  * @function FromJson
+  * @param {object} json
+  * @returns {angular_module.data.journeyType.Data} this
+  */
   Data.prototype.FromJson = function(json) {
     this.Set(json.uuid, json.name);
     return this;
@@ -54,6 +89,9 @@ angular.module('data')
 
   /**
   *
+  * @class angular_module.data.journeyType.Marker
+  * @memberOf angular_module.data.journeyType
+  * @augments angular_module.data.journeyType.Data
   * @param {Uuid} [uuid]
   * @param {string} [name]
   * @param {'img'|'tag'} [type]
@@ -68,6 +106,17 @@ angular.module('data')
   Marker.prototype = Object.create(Data.prototype);
   Marker.prototype.constructor = Marker;
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Marker#
+  * @function Set
+  * @param {Uuid} [uuid]
+  * @param {string} [name]
+  * @param {'img'|'tag'} [type]
+  * @param {string} [url]
+  * @param {number} [tag_id]
+  * @returns {angular_module.data.journeyType.Marker} this
+  */
   Marker.prototype.Set = function(uuid, name, type, url, tag_id) {
     Data.prototype.Set.call(this, uuid, name || 'unnamed marker');
 
@@ -78,6 +127,12 @@ angular.module('data')
     return this;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Marker#
+  * @function ToJson
+  * @returns {object} json object
+  */
   Marker.prototype.ToJson = function() {
     var result = Data.prototype.ToJson.call(this);
 
@@ -90,6 +145,13 @@ angular.module('data')
     return result;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Marker#
+  * @function FromJson
+  * @param {object} json
+  * @returns {angular_module.data.journeyType.Marker} this
+  */
   Marker.prototype.FromJson = function(json) {
     this.Set(json.uuid, json.name, json.type, json.url, json.tag_id);
     return this;
@@ -121,6 +183,8 @@ angular.module('data')
 
   /**
   *
+  * @class angular_module.data.journeyType.ObjectTransform
+  * @memberOf angular_module.data.journeyType
   * @param {Uuid} [object_uuid]
   * @param {string} [name]
   * @param {Point3D} [position]
@@ -131,6 +195,18 @@ angular.module('data')
     this.Set.apply(this, arguments);
   }
 
+
+  /**
+  *
+  * @memberof angular_module.data.journeyType.ObjectTransform#
+  * @function Set
+  * @param {Uuid} [object_uuid]
+  * @param {string} [name]
+  * @param {Point3D} [position]
+  * @param {Point3D} [rotation]
+  * @param {Point3D} [scale]
+  * @returns {angular_module.data.journeyType.ObjectTransform} this
+  */
   ObjectTransform.prototype.Set = function(object_uuid, name, position, rotation, scale) {
     this.uuid = object_uuid;
     this.name = name || '';
@@ -140,6 +216,12 @@ angular.module('data')
     return this;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.ObjectTransform#
+  * @function ToJson
+  * @returns {object} json object
+  */
   ObjectTransform.prototype.ToJson = function() {
     var result = {
       uuid: this.uuid,
@@ -156,11 +238,25 @@ angular.module('data')
     return result;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.ObjectTransform#
+  * @function FromJson
+  * @param {object} json
+  * @returns {angular_module.data.journeyType.ObjectTransform} this
+  */
   ObjectTransform.prototype.FromJson = function(json) {
     this.Set(json.uuid, json.name, json.position, json.rotation, json.scale);
     return this;
   };
 
+  /**
+  * Creates a clone of the target object and applies the transform to it.
+  * @memberof angular_module.data.journeyType.ObjectTransform#
+  * @function ApplyTransform
+  * @param {Object.<THREE.Object3D>} objects
+  * @returns {THREE.Object3D}
+  */
   ObjectTransform.prototype.ApplyTransform = function(objects) {
     var object = objects[this.uuid];
     if (typeof object === 'undefined')
@@ -177,12 +273,24 @@ angular.module('data')
     return object;
   };
 
+  /**
+  * Copies the transform of an THREE.Object3D to this.
+  * @memberof angular_module.data.journeyType.ObjectTransform#
+  * @function Update
+  * @param {THREE.Object3D} object
+  */
   ObjectTransform.prototype.Update = function(object) {
     this.position = ClonePoint3D(object.position);
     this.rotation = ClonePoint3D(object.rotation);
     this.scale    = ClonePoint3D(object.scale, 1);
   };
 
+  /**
+  * Updates the ObjectTransform that a THREE.Object3D has been created from.
+  * @memberof angular_module.data.journeyType.ObjectTransform
+  * @function UpdateInnerTransform
+  * @param {THREE.Object3D} object
+  */
   ObjectTransform.UpdateInnerTransform = function(object) {
     if (object.userData.object_transform instanceof ObjectTransform) {
       object.userData.object_transform.Update(object);
@@ -192,10 +300,13 @@ angular.module('data')
 
   /**
   *
+  * @class angular_module.data.journeyType.Channel
+  * @memberOf angular_module.data.journeyType
+  * @augments angular_module.data.journeyType.Data
   * @param {Uuid} [uuid]
   * @param {string} [name]
   * @param {Uuid} [marker]
-  * @param {ObjectTransform[]} [contents]
+  * @param {angular_module.data.journeyType.ObjectTransform[]} [contents]
   */
   function Channel(uuid, name, marker, contents) {
     Data.call(this, uuid, name);
@@ -206,6 +317,16 @@ angular.module('data')
   Channel.prototype = Object.create(Data.prototype);
   Channel.prototype.constructor = Channel;
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Channel#
+  * @function Set
+  * @param {Uuid} [uuid]
+  * @param {string} [name]
+  * @param {Uuid} [marker]
+  * @param {angular_module.data.journeyType.ObjectTransform[]} [contents]
+  * @returns {angular_module.data.journeyType.Channel} this
+  */
   Channel.prototype.Set = function(uuid, name, marker, contents) {
     Data.prototype.Set.call(this, uuid, name);
 
@@ -215,11 +336,23 @@ angular.module('data')
     return this;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Channel#
+  * @function AddContent
+  * @param {angular_module.data.journeyType.ObjectTransform} object_transform
+  */
   Channel.prototype.AddContent = function(object_transform) {
     this.contents.push(object_transform);
     return this;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Channel#
+  * @function ToJson
+  * @returns {object} json object
+  */
   Channel.prototype.ToJson = function() {
     var result = Data.prototype.ToJson.call(this);
 
@@ -231,6 +364,13 @@ angular.module('data')
     return result;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Channel#
+  * @function FromJson
+  * @param {object} json
+  * @returns {angular_module.data.journeyType.Channel} this
+  */
   Channel.prototype.FromJson = function(json) {
     Data.prototype.FromJson.call(this, json);
 
@@ -251,6 +391,13 @@ angular.module('data')
     return this;
   };
 
+  /**
+  * Creates an object parent of the content objects transformed of this channel.
+  * @memberof angular_module.data.journeyType.Channel#
+  * @function BuildContents
+  * @param {Object.<THREE.Object3D>} objects
+  * @returns {THREE.Object3D}
+  */
   Channel.prototype.BuildContents = function(objects) {
     var objects_transforms = this.contents;
 
@@ -267,6 +414,12 @@ angular.module('data')
     return container;
   };
 
+  /**
+  * Updates the ObjectTransform associated with each direct child of a THREE.Object3D.
+  * @memberof angular_module.data.journeyType.Channel
+  * @function UpdateTransforms
+  * @param {THREE.Object3D} object - Should be created by Channel.BuildContents function.
+  */
   Channel.UpdateTransforms = function(object) {
     object.children.forEach(ObjectTransform.UpdateInnerTransform);
   };
@@ -274,12 +427,20 @@ angular.module('data')
 
   /**
   *
+  * @class angular_module.data.journeyType.PoiChannel
+  * @memberOf angular_module.data.journeyType
   * @param {Uuid} [uuid]
   */
   function PoiChannel(uuid) {
     this.uuid = uuid;
   }
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.PoiChannel#
+  * @function ToJson
+  * @returns {object} json object
+  */
   PoiChannel.prototype.ToJson = function() {
     return {
       uuid: this.uuid
@@ -289,13 +450,16 @@ angular.module('data')
 
   /**
   *
+  * @class angular_module.data.journeyType.Poi
+  * @memberOf angular_module.data.journeyType
+  * @augments angular_module.data.journeyType.Data
   * @param {Uuid} [uuid]
   * @param {string} [name]
   * @param {number} [latitude]
   * @param {number} [longitude]
   * @param {number} [radius]
-  * @param {Channel[]} [channels]
-  * @param {ObjectTransform[]} [objects]
+  * @param {angular_module.data.journeyType.Channel[]} [channels]
+  * @param {angular_module.data.journeyType.ObjectTransform[]} [objects]
   */
   function Poi(uuid, name, latitude, longitude, radius, channels, objects) {
     Data.call(this, uuid, name);
@@ -317,6 +481,19 @@ angular.module('data')
   Poi.prototype = Object.create(Data.prototype);
   Poi.prototype.constructor = Poi;
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Poi#
+  * @function Set
+  * @param {Uuid} [uuid]
+  * @param {string} [name]
+  * @param {number} [latitude]
+  * @param {number} [longitude]
+  * @param {number} [radius]
+  * @param {angular_module.data.journeyType.Channel[]} [channels]
+  * @param {angular_module.data.journeyType.ObjectTransform[]} [objects]
+  * @returns {angular_module.data.journeyType.Poi} this
+  */
   Poi.prototype.Set = function(uuid, name, latitude, longitude, radius, channels, objects) {
     Data.prototype.Set.call(this, uuid, name);
 
@@ -334,6 +511,12 @@ angular.module('data')
     return this;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Poi#
+  * @function ToJson
+  * @returns {object} json object
+  */
   Poi.prototype.ToJson = function() {
     var result = Data.prototype.ToJson.call(this);
 
@@ -350,6 +533,13 @@ angular.module('data')
     return result;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Poi#
+  * @function FromJson
+  * @param {object} json
+  * @returns {angular_module.data.journeyType.Poi} this
+  */
   Poi.prototype.FromJson = function(json) {
     var channels = [];
     var objects = [];
@@ -378,6 +568,13 @@ angular.module('data')
     return this;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Poi#
+  * @function AddChannel
+  * @param {angular_module.data.journeyType.PoiChannel} poi_channel
+  * @returns {boolean} true if the channel is added, false otherwise. A channel is discarded if it is already present.
+  */
   Poi.prototype.AddChannel = function(poi_channel) {
     var insert = !this.channels.find(function(elem) {
       return poi_channel.uuid === uuid;
@@ -389,11 +586,24 @@ angular.module('data')
     return insert;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Poi#
+  * @function AddObject
+  * @param {angular_module.data.journeyType.ObjectTransform} object_transform
+  * @returns {boolean} true
+  */
   Poi.prototype.AddObject = function(object_transform) {
     this.objects.push(object_transform);
     return true;
   };
 
+  /**
+  * Creates a THREE.Object3D, representation of the bounds of the Poi, centered on his position, using CoordinatesConverterSvc.
+  * @memberof angular_module.data.journeyType.Poi#
+  * @function CreateBoundsObject
+  * @returns {THREE.Object3D}
+  */
   Poi.prototype.CreateBoundsObject = function() {
     var points = [];
     var width = 2;
@@ -426,6 +636,13 @@ angular.module('data')
     return obj;
   };
 
+  /**
+  * Creates an object parent of the objects transformed of this POI, centered on the position of the POI, using CoordinatesConverterSvc.
+  * @memberof angular_module.data.journeyType.Poi#
+  * @function CreateScene
+  * @param {Object.<THREE.Object3D>} objects
+  * @returns {THREE.Object3D}
+  */
   Poi.prototype.CreateScene = function(objects) {
     var container = new THREE.Object3D();
 
@@ -445,6 +662,12 @@ angular.module('data')
     return container;
   };
 
+  /**
+  * Updates the ObjectTransform associated with each direct child of a THREE.Object3D.
+  * @memberof angular_module.data.journeyType.Poi#
+  * @function UpdateTransforms
+  * @param {THREE.Object3D} object - Should be created by Poi.CreateScene function.
+  */
   Poi.UpdateTransforms = function(object) {
     object.children.forEach(ObjectTransform.UpdateInnerTransform);
   };
@@ -452,7 +675,9 @@ angular.module('data')
 
   /**
   *
-  * @class
+  * @class angular_module.data.journeyType.Journey
+  * @memberOf angular_module.data.journeyType
+  * @augments angular_module.data.journeyType.Data
   * @param {Uuid} [uuid]
   * @param {string} [name]
   * @param {Uuid[]} [pois]
@@ -469,11 +694,25 @@ angular.module('data')
   Journey.prototype = Object.create(Data.prototype);
   Journey.prototype.constructor = Journey;
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Journey#
+  * @function Clear
+  */
   Journey.prototype.Clear = function() {
     Data.prototype.Clear.call(this);
     this.pois.length = 0;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Journey#
+  * @function Set
+  * @param {Uuid} [uuid]
+  * @param {string} [name]
+  * @param {Uuid[]} [pois]
+  * @returns {angular_module.data.journeyType.Journey} this
+  */
   Journey.prototype.Set = function(uuid, name, pois) {
     Data.prototype.Set.call(this, uuid, name);
 
@@ -481,12 +720,25 @@ angular.module('data')
       this.pois = pois.slice(0);
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Journey#
+  * @function ToJson
+  * @returns {object} json object
+  */
   Journey.prototype.ToJson = function() {
     var result = Data.prototype.ToJson.call(this);
     result.pois = this.pois.slice(0);
     return result;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Journey#
+  * @function FromJson
+  * @param {object} json
+  * @returns {angular_module.data.journeyType.Journey} this
+  */
   Journey.prototype.FromJson = function(json) {
     var pois;
     if (typeof json.pois !== 'undefined') {
@@ -499,6 +751,13 @@ angular.module('data')
     this.Set(json.uuid, json.name, pois);
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Journey#
+  * @function AddPoi
+  * @param {Uuid} uuid
+  * @returns {boolean} true if the Poi was added, false otherwise, if already present.
+  */
   Journey.prototype.AddPoi = function(uuid) {
     var insert = (this.pois.indexOf(uuid) < 0);
     if (insert)
@@ -623,6 +882,9 @@ angular.module('data')
 
   /**
   *
+  * @class angular_module.data.journeyType.DataJourney
+  * @memberOf angular_module.data.journeyType
+  * @augments angular_module.data.journeyType.Data
   */
   function DataJourney() {
     this.journey = new Journey();
@@ -632,6 +894,11 @@ angular.module('data')
     this.objects = {};
   }
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.DataJourney#
+  * @function Clear
+  */
   DataJourney.prototype.Clear = function() {
     this.journey.Clear();
     this.pois.length = 0;
@@ -640,6 +907,16 @@ angular.module('data')
     this.objects.length = 0;
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.DataJourney#
+  * @function Set
+  * @param {angular_module.data.journeyType.Journey} [journey]
+  * @param {angular_module.data.journeyType.Poi[]} [pois]
+  * @param {angular_module.data.journeyType.Channel[]} [channels]
+  * @param {angular_module.data.journeyType.Marker[]} [markers]
+  * @param {THREE.Object3D[]} [objects]
+  */
   DataJourney.prototype.Set = function(journey, pois, channels, markers, objects) {
     if (typeof journey !== 'undefined')
       this.journey.Set(journey.uuid, journey.name, journey.pois);
@@ -653,6 +930,12 @@ angular.module('data')
       this.objects = ArrayToObject(objects);
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.DataJourney#
+  * @function ToJson
+  * @returns {object} json object
+  */
   DataJourney.prototype.ToJson = function() {
     return {
       journey:  this.journey.ToJson(),
@@ -663,6 +946,12 @@ angular.module('data')
     };
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.DataJourney#
+  * @function FromJson
+  * @returns {Promise.<undefined, string>} A promise that resolves when the loading is complete.
+  */
   DataJourney.prototype.FromJson = function(json) {
     var scope = this;
     var promise = AMTHREE.ParseObjectArray(json.objects).then(function(objects) {
