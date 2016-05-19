@@ -1,6 +1,6 @@
 angular.module('data')
 
-.factory('journeyType', [function() {
+.factory('journeyType', ['CoordinatesConverterSvc', function(CoordinatesConverterSvc) {
 
   /**
   * typedef {string} Uuid
@@ -183,6 +183,12 @@ angular.module('data')
     this.scale    = ClonePoint3D(object.scale, 1);
   };
 
+  ObjectTransform.UpdateInnerTransform = function(object) {
+    if (object.userData.object_transform instanceof ObjectTransform) {
+      object.userData.object_transform.Update(object);
+    }
+  };
+
 
   /**
   *
@@ -193,7 +199,8 @@ angular.module('data')
   */
   function Channel(uuid, name, marker, contents) {
     Data.call(this, uuid, name);
-    this.Set.apply(this, arguments);
+    this.contents = [];
+    this.Set.call(this, uuid, name, marker, contents);
   }
 
   Channel.prototype = Object.create(Data.prototype);
@@ -225,6 +232,8 @@ angular.module('data')
   };
 
   Channel.prototype.FromJson = function(json) {
+    Data.prototype.FromJson.call(this, json);
+
     var transforms = [];
 
     if (typeof json.contents !== 'undefined') {
@@ -236,6 +245,10 @@ angular.module('data')
       else
         console.warn('failed to add object transforms: not an array');
     }
+
+    this.Set(json.uuid, json.name, json.marker, transforms);
+
+    return this;
   };
 
   Channel.prototype.BuildContents = function(objects) {
@@ -252,6 +265,10 @@ angular.module('data')
     }
 
     return container;
+  };
+
+  Channel.UpdateTransforms = function(object) {
+    object.children.forEach(ObjectTransform.UpdateInnerTransform);
   };
 
 
@@ -329,6 +346,8 @@ angular.module('data')
     result.objects = this.objects.map(function(o) {
       return o.ToJson();
     });
+
+    return result;
   };
 
   Poi.prototype.FromJson = function(json) {
@@ -346,7 +365,9 @@ angular.module('data')
     }
     if (typeof json.objects !== 'undefined') {
       if (json.objects instanceof Array) {
-        objects = json.objects;
+        objects = json.objects.filter(new DataFilter('ObjectTransform')).map(function(e) {
+          return (new ObjectTransform()).FromJson(e);
+        });
       }
       else
         console.warn('failed to add POI objects: not an array');
@@ -358,24 +379,26 @@ angular.module('data')
   };
 
   Poi.prototype.AddChannel = function(poi_channel) {
-    var found = this.channels.find(function(elem) {
+    var insert = !this.channels.find(function(elem) {
       return poi_channel.uuid === uuid;
     });
 
-    if (!found) {
+    if (insert) {
       poi.channels.push(poi_channel);
     }
-    return !found;
+    return insert;
   };
 
   Poi.prototype.AddObject = function(object_transform) {
     this.objects.push(object_transform);
+    return true;
   };
 
   Poi.prototype.CreateBoundsObject = function() {
     var points = [];
     var width = 2;
-    var height = 2;
+    var height = 0.5;
+    var pos_y = -1;
 
     var step = width / 3;
     var i = this.radius;
@@ -394,11 +417,11 @@ angular.module('data')
       transparent: true,
       side: THREE.BackSide
     } );
-    var position = CoordinatesConverterSvc.ConvertLocalCoordinates(poi.latitude, poi.longitude);
+    var position = CoordinatesConverterSvc.ConvertLocalCoordinates(this.latitude, this.longitude);
     var obj = new THREE.Mesh(geometry, material);
     obj.position.x = position.x;
     obj.position.z = position.y;
-    obj.position.y = -3;
+    obj.position.y = pos_y - height / 2;
 
     return obj;
   };
@@ -406,19 +429,24 @@ angular.module('data')
   Poi.prototype.CreateScene = function(objects) {
     var container = new THREE.Object3D();
 
-    for (var i = 0, c = poi.objects.length; i < c; ++i) {
-      var elem = poi.objects[i];
+    for (var i = 0, c = this.objects.length; i < c; ++i) {
+      var elem = this.objects[i];
       var object = elem.ApplyTransform(objects);
+      container.add(object);
     }
 
-    var position = CoordinatesConverterSvc.ConvertLocalCoordinates(poi.latitude, poi.longitude);
+    var position = CoordinatesConverterSvc.ConvertLocalCoordinates(this.latitude, this.longitude);
     container.position.x = position.x;
     container.position.z = position.y;
 
-    container.name = poi.name;
+    container.name = this.name;
     container.userData.poi = this;
 
     return container;
+  };
+
+  Poi.UpdateTransforms = function(object) {
+    object.children.forEach(ObjectTransform.UpdateInnerTransform);
   };
 
 
@@ -471,6 +499,13 @@ angular.module('data')
     this.Set(json.uuid, json.name, pois);
   };
 
+  Journey.prototype.AddPoi = function(uuid) {
+    var insert = (this.pois.indexOf(uuid) < 0);
+    if (insert)
+      this.pois.push(uuid);
+    return insert;
+  };
+
 
   function DataFilter(type) {
     return function(e, index) {
@@ -481,15 +516,120 @@ angular.module('data')
     };
   }
 
+  function ArraysEqual(a, b) {
+    if (a === b) return true;
+    if (a === null || b === null) return false;
+    if (a.length != b.length) return false;
+
+    for (var i = 0; i < a.length; ++i) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+
+  function ArrayToObject(arr) {
+    var obj = {};
+    if (arr) {
+      for (var i = 0, c = arr.length; i < c; ++i) {
+        var elem = arr[i];
+        obj[elem.uuid] = elem;
+      }
+    }
+    return obj;
+  }
+
+  function DataObjectToArray(obj) {
+    var ar = [];
+
+    for (var key in obj)
+      ar.push(obj[key].ToJson());
+
+    return ar;
+  }
+
+  function TraverseObject3DArrayJson(array, fun) {
+    if (!array)
+      return;
+
+    for (var i = 0; i < array.length; ++i) {
+      fun(array[i]);
+      TraverseObject3DArrayJson(array[i].children, fun);
+    }
+  }
+
+  function ObjectToArray(obj) {
+    var ar = [];
+
+    for (var key in obj)
+      ar.push(obj[key]);
+
+    return ar;
+  }
+
+  function ObjectsToJson(objects) {
+    var matrix4_identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
+    var meta = {
+      geometries: {},
+      materials : {},
+      textures  : {},
+      images    : {},
+      videos    : {},
+      sounds    : {}
+    };
+
+    var object_jsons = [];
+
+    for (var id in objects) {
+      var elem = objects[id];
+      var json = elem.toJSON(meta);
+
+      object_jsons.push(json.object);
+    }
+
+
+    TraverseObject3DArrayJson(object_jsons, function(object) {
+      if (ArraysEqual(object.matrix, matrix4_identity))
+        delete object.matrix;
+    });
+    DeleteMetadata(meta.geometries);
+    DeleteMetadata(meta.materials);
+    DeleteMetadata(meta.textures);
+    DeleteMetadata(meta.images);
+
+    return {
+      objects:    object_jsons,
+      geometries: ObjectToArray(meta.geometries),
+      materials:  ObjectToArray(meta.materials),
+      textures:   ObjectToArray(meta.textures),
+      images:     ObjectToArray(meta.images),
+      videos:     ObjectToArray(meta.videos),
+      sounds:     ObjectToArray(meta.sounds),
+      constants: {
+        image_path: AMTHREE.IMAGE_PATH,
+        model_path: AMTHREE.MODEL_PATH,
+        video_path: AMTHREE.VIDEO_PATH,
+        sound_path: AMTHREE.SOUND_PATH,
+        asset_path: AMTHREE.ASSET_PATH
+      }
+    };
+  }
+
+  function DeleteMetadata(object) {
+    for (var key in object) {
+      delete object[key].metadata;
+    }
+  }
+
   /**
   *
   */
   function DataJourney() {
     this.journey = new Journey();
-    this.pois = [];
-    this.channels = [];
-    this.markers = [];
-    this.objects = [];
+    this.pois = {};
+    this.channels = {};
+    this.markers = {};
+    this.objects = {};
   }
 
   DataJourney.prototype.Clear = function() {
@@ -504,13 +644,23 @@ angular.module('data')
     if (typeof journey !== 'undefined')
       this.journey.Set(journey.uuid, journey.name, journey.pois);
     if (pois instanceof Array)
-      this.pois = pois.slice(0);
+      this.pois = ArrayToObject(pois);
     if (channels instanceof Array)
-      this.channels = channels.slice(0);
+      this.channels = ArrayToObject(channels);
     if (markers instanceof Array)
-      this.markers = markers.slice(0);
+      this.markers = ArrayToObject(markers);
     if (objects instanceof Array)
-      this.objects = objects.slice(0);
+      this.objects = ArrayToObject(objects);
+  };
+
+  DataJourney.prototype.ToJson = function() {
+    return {
+      journey:  this.journey.ToJson(),
+      pois:     DataObjectToArray(this.pois),
+      channels: DataObjectToArray(this.channels),
+      markers:  DataObjectToArray(this.markers),
+      objects:  ObjectsToJson(this.objects)
+    };
   };
 
   DataJourney.prototype.FromJson = function(json) {
