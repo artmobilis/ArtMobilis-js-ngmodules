@@ -99,8 +99,9 @@ angular.module('data')
   * @param {number} [tag_id]
   */
   function Marker(uuid, name, type, url, tag_id) {
-    Data.call(this, uuid, name);
-    this.Set.apply(arguments);
+    Data.call(this, uuid);
+    this.Clear();
+    this.Set(uuid, name, type, url, tag_id);
   }
 
   Marker.prototype = Object.create(Data.prototype);
@@ -118,11 +119,14 @@ angular.module('data')
   * @returns {angular_module.data.journeyType.Marker} this
   */
   Marker.prototype.Set = function(uuid, name, type, url, tag_id) {
-    Data.prototype.Set.call(this, uuid, name || 'unnamed marker');
+    Data.prototype.Set.call(this, uuid, name);
 
-    this.type = type || 'img';
-    this.url = url || '';
-    this.tag_id = tag_id;
+    if (typeof type === 'string')
+      this.type = type;
+    if (typeof url === 'string')
+      this.url = url;
+    if (typeof tag_id === 'number')
+      this.tag_id = tag_id;
 
     return this;
   };
@@ -155,6 +159,18 @@ angular.module('data')
   Marker.prototype.FromJson = function(json) {
     this.Set(json.uuid, json.name, json.type, json.url, json.tag_id);
     return this;
+  };
+
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Marker#
+  * @function Clear
+  */
+  Marker.prototype.Clear = function() {
+    Data.prototype.Clear.call(this);
+    this.type = 'img';
+    this.url = '';
+    this.tag_id = -1;
   };
 
 
@@ -310,6 +326,7 @@ angular.module('data')
   */
   function Channel(uuid, name, marker, contents) {
     Data.call(this, uuid, name);
+    this.marker = undefined;
     this.contents = [];
     this.Set.call(this, uuid, name, marker, contents);
   }
@@ -330,7 +347,8 @@ angular.module('data')
   Channel.prototype.Set = function(uuid, name, marker, contents) {
     Data.prototype.Set.call(this, uuid, name);
 
-    this.marker = marker;
+    if (marker instanceof Marker)
+      this.marker = marker;
     if (contents instanceof Array)
       this.contents = contents.slice(0);
     return this;
@@ -424,6 +442,17 @@ angular.module('data')
     object.children.forEach(ObjectTransform.UpdateInnerTransform);
   };
 
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Channel#
+  * @function Clear
+  */
+  Channel.prototype.Clear = function() {
+    Data.prototype.Clear.call(this);
+    this.marker = undefined;
+    this.contents.length = 0;
+  };
+
 
   /**
   *
@@ -462,20 +491,13 @@ angular.module('data')
   * @param {angular_module.data.journeyType.ObjectTransform[]} [objects]
   */
   function Poi(uuid, name, latitude, longitude, radius, channels, objects) {
-    Data.call(this, uuid, name);
-
-    this.latitude = latitude || 0;
-    this.longitude = longitude || 0;
-    this.radius = radius || 10;
-
-    if (channels instanceof Array)
-      this.channels = channels.slice(0);
-    else
-      this.channels = [];
-    if (objects instanceof Array)
-      this.objects = objects.slice(0);
-    else
-      this.objects = [];
+    Data.call(this, uuid);
+    this.latitude = 0;
+    this.longitude = 0;
+    this.radius = 10;
+    this.channels = [];
+    this.objects = [];
+    this.Set(uuid, name, latitude, longitude, radius, channels, objects);
   }
 
   Poi.prototype = Object.create(Data.prototype);
@@ -660,6 +682,20 @@ angular.module('data')
     container.userData.poi = this;
 
     return container;
+  };
+
+  /**
+  *
+  * @memberof angular_module.data.journeyType.Poi#
+  * @function Clear
+  */
+  Poi.prototype.Clear = function() {
+    Data.prototype.Clear.call(this);
+    this.latitude = 0;
+    this.longitude = 0;
+    this.radius = 10;
+    this.channels.length = 0;
+    this.objects.length = 0;
   };
 
   /**
