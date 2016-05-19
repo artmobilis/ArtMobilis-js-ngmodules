@@ -55,6 +55,23 @@ angular.module('data')
       return _event_manager.Fire(_data_change_event_name, [type, id]);
     }
 
+    function ParseDataDoIt(json, type) {
+      var promise;
+
+      switch (type) {
+        case 'data_journey':
+          promise = _data_journey.FromJson(json).then(function() {
+            NotifyChange('data_journey');
+          });
+        break;
+        default:
+          promise = Promise.resolve();
+        break;
+      }
+
+      return promise;
+    }
+
     /**
     * Loads a data file
     * @memberOf angular_module.data.DataManagerSvc
@@ -65,7 +82,7 @@ angular.module('data')
     function LoadData(url, type) {
       _load_promise = _load_promise.then(function() {
         return AM.LoadJson(url).then(function(json) {
-          return ParseData(json, type);
+          return ParseDataDoIt(json, type);
         });
       });
 
@@ -80,18 +97,7 @@ angular.module('data')
     * @returns {Promise.<undefined, string>}
     */
     function ParseData(json, type) {
-      _load_promise = _load_promise.then(function() {
-
-        switch (type) {
-          case 'data_journey':
-            return _data_journey.FromJson(json).then(function() {
-              NotifyChange('data_journey');
-            });
-          break;
-        }
-
-      });
-
+      _load_promise = ParseDataDoIt();
       return _load_promise;
     }
 
