@@ -72,12 +72,6 @@ angular.module('dataLoading')
     }
   }
 
-  function Concat(dst, src) {
-    for (var key in src) {
-      dst[key] = src[key];
-    }
-  }
-
   function DeleteMetadata(object) {
     for (var key in object) {
       delete object[key].metadata;
