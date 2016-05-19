@@ -34,7 +34,7 @@
 
 angular.module('data')
 
-.factory('DataManagerSvc', ['dataJourneyFactory', 'PATHS', function(dataJourneyFactory, PATHS) {
+.factory('DataManagerSvc', ['journeyType', function(journeyType) {
 
   /*
   * A string, id of an asset type
@@ -49,7 +49,7 @@ angular.module('data')
 
   function DataManagerSvc() {
 
-    var _data_journey = dataJourneyFactory.Create();
+    var _data_journey = new journeyType.DataJourney();
     var _load_promise = Promise.resolve();
     var _event_manager = new AM.EventManager();
     var _data_change_event_name = 'data_changed';
@@ -83,6 +83,23 @@ angular.module('data')
       return _event_manager.Fire(_data_change_event_name, [type, id]);
     }
 
+    function ParseDataDoIt(json, type) {
+      var promise;
+
+      switch (type) {
+        case 'data_journey':
+          promise = _data_journey.FromJson(json).then(function() {
+            NotifyChange('data_journey');
+          });
+        break;
+        default:
+          promise = Promise.resolve();
+        break;
+      }
+
+      return promise;
+    }
+
     /**
     * Loads a data file
     * @memberOf angular_module.data.DataManagerSvc
@@ -92,13 +109,9 @@ angular.module('data')
     */
     function LoadData(url, type) {
       _load_promise = _load_promise.then(function() {
-
-        return dataJourneyFactory.LoadData(url, type, _data_journey)
-        .then(function(data_journey) {
-          _data_journey = data_journey;
-          NotifyChange('data_journey');
+        return AM.LoadJson(url).then(function(json) {
+          return ParseDataDoIt(json, type);
         });
-
       });
 
       return _load_promise;
@@ -112,16 +125,7 @@ angular.module('data')
     * @returns {Promise.&lt;undefined, string>}
     */
     function ParseData(json, type) {
-      _load_promise = _load_promise.then(function() {
-
-        return dataJourneyFactory.ParseData(json, type, _data_journey)
-        .then(function(data_journey) {
-          _data_journey = data_journey;
-          NotifyChange('data_journey');
-        });
-
-      });
-
+      _load_promise = ParseDataDoIt();
       return _load_promise;
     }
 
@@ -130,7 +134,7 @@ angular.module('data')
     * @memberOf angular_module.data.DataManagerSvc
     */
     function Clear() {
-      _data_journey = dataJourneyFactory.Create();
+      _data_journey = new journeyType.DataJourney();
       NotifyChange('data_journey');
     }
 
@@ -141,17 +145,6 @@ angular.module('data')
     */
     function GetData() {
       return _data_journey;
-    }
-
-    function LoadPresets() {
-      LoadData(PATHS.OBJECTS, 'object_array');
-      LoadData(PATHS.CONTENTS, 'content_array');
-      LoadData(PATHS.MARKERS, 'marker_array');
-      LoadData(PATHS.CHANNELS, 'channel_array');
-      LoadData(PATHS.POIS, 'poi_array');
-      LoadData(PATHS.JOURNEY, 'journey');
-
-      return _load_promise;
     }
 
     function GetLoadPromise() {
@@ -167,11 +160,12 @@ angular.module('data')
       var pois = _data_journey.pois;
       var channels = _data_journey.channels;
       var markers = _data_journey.markers;
-      var contents = _data_journey.contents;
       var objects = _data_journey.objects;
 
-      for (var i = 0; i &lt; journey.pois.length;) {
-        var poi_id = journey.pois[i];
+      var poi_id, i, channel_id, content_id;
+
+      for (i = 0; i &lt; journey.pois.length;) {
+        poi_id = journey.pois[i];
         if (typeof pois[poi_id] === 'undefined') {
           journey.pois.splice(i, 1);
           NotifyChange('journey');
@@ -180,10 +174,10 @@ angular.module('data')
           ++i;
       }
 
-      for (var poi_id in pois) {
+      for (poi_id in pois) {
         var poi = pois[poi_id];
-        for (var i = 0; i &lt; poi.channels.length;) {
-          var channel_id = poi.channels[i].uuid;
+        for (i = 0; i &lt; poi.channels.length;) {
+          channel_id = poi.channels[i].uuid;
           if (typeof channels[channel_id] === 'undefined') {
             poi.channels.splice(i, 1);
             NotifyChange('poi', poi_id);
@@ -193,16 +187,16 @@ angular.module('data')
         }
       }
 
-      for (var channel_id in channels) {
+      for (channel_id in channels) {
         var channel = channels[channel_id];
         var changed = false;
         if (typeof markers[channel.marker] === 'undefined') {
           channel.marker = null;
           changed = true;
         }
-        for (var i = 0; i &lt; channel.contents.length;) {
-          var content_id = channel.contents[i].uuid;
-          if (typeof contents[content_id] === 'undefined') {
+        for (i = 0; i &lt; channel.contents.length;) {
+          object_id = channel.contents[i].uuid;
+          if (typeof objects[object_id] === 'undefined') {
             channel.contents.splice(i, 1);
             changed = true;
           }
@@ -212,21 +206,12 @@ angular.module('data')
         if (changed)
           NotifyChange('channel', channel_id);
       }
-
-      for (var content_id in contents) {
-        var content = contents[content_id];
-        if (typeof objects[content.object] === 'undefined') {
-          content.object = null;
-          NotifyChange('content', content_id);
-        }
-      }
     }
 
     this.LoadData = LoadData;
     this.ParseData = ParseData;
     this.Clear = Clear;
     this.GetData = GetData;
-    this.LoadPresets = LoadPresets;
     this.GetLoadPromise = GetLoadPromise;
     this.CleanReferences = CleanReferences;
     this.AddListenerDataChange = AddListenerDataChange;
@@ -249,13 +234,13 @@ angular.module('data')
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="angular_module.data.html">data</a></li><li><a href="angular_module.data.DataManagerSvc.html">DataManagerSvc</a></li><li><a href="angular_module.data.Journey.html">Journey</a></li><li><a href="angular_module.dataLoading.html">dataLoading</a></li><li><a href="angular_module.dataLoading.channelFactory.html">channelFactory</a></li><li><a href="angular_module.dataLoading.contentFactory.html">contentFactory</a></li><li><a href="angular_module.dataLoading.dataArrayFactory.html">dataArrayFactory</a></li><li><a href="angular_module.dataLoading.dataJourneyFactory.html">dataJourneyFactory</a></li><li><a href="angular_module.dataLoading.journeyFactory.html">journeyFactory</a></li><li><a href="angular_module.dataLoading.markerFactory.html">markerFactory</a></li><li><a href="angular_module.dataLoading.objectFactory.html">objectFactory</a></li><li><a href="angular_module.dataLoading.poiFactory.html">poiFactory</a></li><li><a href="angular_module.journey.html">journey</a></li><li><a href="angular_module.journey.GeolocationSvc.html">GeolocationSvc</a></li><li><a href="angular_module.journey.JourneyManagerSvc.html">JourneyManagerSvc</a></li><li><a href="angular_module.journey.JourneyRenderer.html">JourneyRenderer</a></li><li><a href="angular_module.journey.JourneySceneSvc.html">JourneySceneSvc</a></li><li><a href="angular_module.journey.trackingView.html">trackingView</a></li></ul><h3>Namespaces</h3><ul><li><a href="angular_module.html">angular_module</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="angular_module.data.html">data</a></li><li><a href="angular_module.data.DataManagerSvc.html">DataManagerSvc</a></li><li><a href="angular_module.data.journeyType.html">journeyType</a></li><li><a href="angular_module.data.journeyType.Channel.html">Channel</a></li><li><a href="angular_module.data.journeyType.Data.html">Data</a></li><li><a href="angular_module.data.journeyType.DataJourney.html">DataJourney</a></li><li><a href="angular_module.data.journeyType.Journey.html">Journey</a></li><li><a href="angular_module.data.journeyType.Marker.html">Marker</a></li><li><a href="angular_module.data.journeyType.ObjectTransform.html">ObjectTransform</a></li><li><a href="angular_module.data.journeyType.Poi.html">Poi</a></li><li><a href="angular_module.data.journeyType.PoiChannel.html">PoiChannel</a></li><li><a href="angular_module.journey.html">journey</a></li><li><a href="angular_module.journey.GeolocationSvc.html">GeolocationSvc</a></li><li><a href="angular_module.journey.JourneyManagerSvc.html">JourneyManagerSvc</a></li><li><a href="angular_module.journey.JourneyRenderer.html">JourneyRenderer</a></li><li><a href="angular_module.journey.JourneySceneSvc.html">JourneySceneSvc</a></li><li><a href="angular_module.journey.trackingView.html">trackingView</a></li></ul><h3>Namespaces</h3><ul><li><a href="angular_module.html">angular_module</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Apr 19 2016 16:34:32 GMT+0200 (Paris, Madrid (heure d’été))
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu May 19 2016 15:42:32 GMT+0200 (Paris, Madrid (heure d’été))
 </footer>
 
 <script> prettyPrint(); </script>

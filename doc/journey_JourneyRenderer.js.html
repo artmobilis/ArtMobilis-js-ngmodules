@@ -37,12 +37,14 @@
     'DataManagerSvc',
     'JourneyManagerSvc',
     'MarkerDetectorSvc',
+    'debug_globals',
     function(
       JourneySceneSvc,
       CameraSvc,
       DataManagerSvc,
       JourneyManagerSvc,
-      MarkerDetectorSvc) {
+      MarkerDetectorSvc,
+      debug_globals) {
 
 
     /**
@@ -62,43 +64,67 @@
       var _ctx2d = _canvas2d.getContext('2d');
 
       var _renderer = new THREE.WebGLRenderer( { canvas: _canvas3d, alpha: true } );
-      var _camera = new THREE.PerspectiveCamera(60, 1, 0.001, 10000);
+      var _camera = new THREE.PerspectiveCamera(40, 1, 0.001, 10000);
 
-      var _camera_width = 0;
+      var _camera_width  = 0;
       var _camera_height = 0;
+      var _render_width  = 0;
+      var _render_height = 0;
+      var _padding_h = 0;
+      var _padding_v = 0;
 
       var _camera_video_element = CameraSvc.GetVideoElement();
 
-      var _debug_enabled = false;
-      var _debugMatches = false;
+      var _debug_enabled = false; // display corners and matching result
+      var _continuous_debug_display=true;
+      var _matching_persistence=30;
+      var _matching_display=0;
       var _marker_corners;
+      var _last_matching_uuid;
       var _image_debugger = new AM.ImageDebugger();
-      _image_debugger.SetData(_ctx2d, CameraSvc.GetVideoElement(), _debugMatches);
+      _image_debugger.SetData(_ctx2d, CameraSvc.GetVideoElement(), _debug_enabled);
 
 
       /**
       * Resizes the renderer, the canvas, and the 3D camera.
       * @memberOf angular_module.journey.JourneyRenderer
-      * @param {number} width
-      * @param {number} height
+      * @param {number} [width]
+      * @param {number} [height]
       */
       function Resize(width, height) {
-        width = width || _canvas3d.width;
-        height = height || _canvas3d.height;
+        width  = width  || _canvas2d.width;
+        height = height || _canvas2d.height;
 
-        _renderer.setSize(width, height);
-        _canvas2d.width = width;
+        _canvas2d.width  = width;
         _canvas2d.height = height;
-        if (height > 0) {
-          _camera.aspect = width / height;
+
+        if (_camera_width > 0 &amp;&amp; _camera_height > 0) {
+          var ratio_x = _canvas2d.width  / _camera_width;
+          var ratio_y = _canvas2d.height / _camera_height;
+          var ratio   = Math.max(ratio_x, ratio_y);
+          _render_width  = _camera_width  * ratio;
+          _render_height = _camera_height * ratio;
+          _padding_h  = (_canvas2d.width  - _render_width ) / 2;
+          _padding_v  = (_canvas2d.height - _render_height) / 2;
+        }
+        else {
+          _render_width  = width;
+          _render_height = height;
+        }
+
+        _renderer.setSize(_render_width, _render_height);
+        if (_render_height > 0) {
+          _camera.aspect = _render_width / _render_height;
           _camera.updateProjectionMatrix();
         }
       }
 
       function RenderDebug() {
+        MarkerDetectorSvc.SetDebug(true);
         var marker_corners = MarkerDetectorSvc.GetMarker();
 
         if (marker_corners === undefined)  {
+          //return; // uncomment to view live result 
           if( _marker_corners === undefined) 
             return;
           marker_corners = _marker_corners; // use last detection for continuous display
@@ -107,12 +133,25 @@
         _image_debugger.UpdateSize(_canvas2d, MarkerDetectorSvc.video_size_target);
         _image_debugger.DrawCorners(marker_corners);
 
-        if (marker_corners.matched){
+        // an image marker has been found
+        if (marker_corners.matched) {
+          _matching_display=_matching_persistence;
+          _last_matching_uuid =marker_corners.uuid;
+        }
+        else if (_continuous_debug_display)
+        {
+           // visualise matched corners when matching fail
+          _matching_display=_matching_persistence;
+          _last_matching_uuid =marker_corners.last_uuid;
+        }
+
+        if(_matching_display &amp;&amp; _last_matching_uuid !== undefined){
           var data_journey = DataManagerSvc.GetData();
-          var channel = data_journey.channels[marker_corners.uuid];
+          var channel = data_journey.channels[_last_matching_uuid];
           var url = data_journey.markers[channel.marker].url;
 
           _image_debugger.DebugMatching(marker_corners, url);
+          _matching_display--;
         }
         _marker_corners = marker_corners;
       }
@@ -120,20 +159,13 @@
       function OnCamLoaded() {
         _camera_width  = _camera_video_element.videoWidth;
         _camera_height = _camera_video_element.videoHeight;
+        Resize();
       }
 
       function CopyVideo() {
         if (_camera_video_element.readyState === _camera_video_element.HAVE_ENOUGH_DATA) {
           if (_camera_width > 0 &amp;&amp; _camera_height > 0) {
-            var ratio_x = _canvas2d.width  / _camera_width;
-            var ratio_y = _canvas2d.height / _camera_height;
-            var ratio   = Math.max(ratio_x, ratio_y);
-            var diff_h  = (_canvas2d.width  - _camera_width  * ratio) / 2;
-            var diff_v  = (_canvas2d.height - _camera_height * ratio) / 2;
-            var new_width  = _camera_width  * ratio;
-            var new_height = _camera_height * ratio;
-
-            _ctx2d.drawImage(_camera_video_element, diff_h, diff_v, new_width, new_height);
+            _ctx2d.drawImage(_camera_video_element, _padding_h, _padding_v, _render_width, _render_height);
           }
         }
       }
@@ -152,7 +184,7 @@
 
         CopyVideo();
 
-        _ctx2d.drawImage(_canvas3d, 0, 0);
+        _ctx2d.drawImage(_canvas3d, _padding_h, _padding_v, _render_width, _render_height);
 
         if (JourneyManagerSvc.GetMode() !== JourneyManagerSvc.MODE_POI) {
           RenderBubbles(_canvas2d, _camera);
@@ -179,6 +211,7 @@
       */
       function SetDebug(bool) {
         _debug_enabled = bool;
+        _image_debugger.SetDebug(bool);
       }
 
       /**
@@ -310,13 +343,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="angular_module.data.html">data</a></li><li><a href="angular_module.data.DataManagerSvc.html">DataManagerSvc</a></li><li><a href="angular_module.data.Journey.html">Journey</a></li><li><a href="angular_module.dataLoading.html">dataLoading</a></li><li><a href="angular_module.dataLoading.channelFactory.html">channelFactory</a></li><li><a href="angular_module.dataLoading.contentFactory.html">contentFactory</a></li><li><a href="angular_module.dataLoading.dataArrayFactory.html">dataArrayFactory</a></li><li><a href="angular_module.dataLoading.dataJourneyFactory.html">dataJourneyFactory</a></li><li><a href="angular_module.dataLoading.journeyFactory.html">journeyFactory</a></li><li><a href="angular_module.dataLoading.markerFactory.html">markerFactory</a></li><li><a href="angular_module.dataLoading.objectFactory.html">objectFactory</a></li><li><a href="angular_module.dataLoading.poiFactory.html">poiFactory</a></li><li><a href="angular_module.journey.html">journey</a></li><li><a href="angular_module.journey.GeolocationSvc.html">GeolocationSvc</a></li><li><a href="angular_module.journey.JourneyManagerSvc.html">JourneyManagerSvc</a></li><li><a href="angular_module.journey.JourneyRenderer.html">JourneyRenderer</a></li><li><a href="angular_module.journey.JourneySceneSvc.html">JourneySceneSvc</a></li><li><a href="angular_module.journey.trackingView.html">trackingView</a></li></ul><h3>Namespaces</h3><ul><li><a href="angular_module.html">angular_module</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="angular_module.data.html">data</a></li><li><a href="angular_module.data.DataManagerSvc.html">DataManagerSvc</a></li><li><a href="angular_module.data.journeyType.html">journeyType</a></li><li><a href="angular_module.data.journeyType.Channel.html">Channel</a></li><li><a href="angular_module.data.journeyType.Data.html">Data</a></li><li><a href="angular_module.data.journeyType.DataJourney.html">DataJourney</a></li><li><a href="angular_module.data.journeyType.Journey.html">Journey</a></li><li><a href="angular_module.data.journeyType.Marker.html">Marker</a></li><li><a href="angular_module.data.journeyType.ObjectTransform.html">ObjectTransform</a></li><li><a href="angular_module.data.journeyType.Poi.html">Poi</a></li><li><a href="angular_module.data.journeyType.PoiChannel.html">PoiChannel</a></li><li><a href="angular_module.journey.html">journey</a></li><li><a href="angular_module.journey.GeolocationSvc.html">GeolocationSvc</a></li><li><a href="angular_module.journey.JourneyManagerSvc.html">JourneyManagerSvc</a></li><li><a href="angular_module.journey.JourneyRenderer.html">JourneyRenderer</a></li><li><a href="angular_module.journey.JourneySceneSvc.html">JourneySceneSvc</a></li><li><a href="angular_module.journey.trackingView.html">trackingView</a></li></ul><h3>Namespaces</h3><ul><li><a href="angular_module.html">angular_module</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Apr 19 2016 16:34:32 GMT+0200 (Paris, Madrid (heure d’été))
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu May 19 2016 15:42:32 GMT+0200 (Paris, Madrid (heure d’été))
 </footer>
 
 <script> prettyPrint(); </script>
