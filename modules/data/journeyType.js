@@ -8,7 +8,7 @@ angular.module('data')
 .factory('journeyType', ['CoordinatesConverterSvc', function(CoordinatesConverterSvc) {
 
   /**
-  * typedef {string} Uuid
+  * @typedef {string} Uuid
   */
 
   /**
@@ -97,6 +97,11 @@ angular.module('data')
   * @param {'img'|'tag'} [type]
   * @param {string} [url]
   * @param {number} [tag_id]
+  * @property {Uuid} uuid
+  * @property {string} name
+  * @property {'img'|'tag'} type
+  * @property {string} url
+  * @property {number} tag_id
   */
   function Marker(uuid, name, type, url, tag_id) {
     Data.call(this, uuid);
@@ -179,21 +184,25 @@ angular.module('data')
       return path.split('/').pop().split('\\').pop();
   }
 
-  function ClonePoint3D(point, default_value) {
+  function CopyPoint3D(dst, src, default_value) {
     if (typeof point !== 'object') point = {};
     if (typeof default_value !== 'number') default_value = 0;
 
-    return {
-      x: point.x || default_value,
-      y: point.y || default_value,
-      z: point.z || default_value
-    };
+    dst.x = point.x || default_value;
+    dst.y = point.y || default_value;
+    dst.z = point.z || default_value;
   }
 
   function Point3DIsDefault(point, value) {
     if (typeof value === 'undefined')
       value = 0;
     return point.x === value && point.y === value && point.z === value;
+  }
+
+  function ResetPoint3D(point, value) {
+    point.x = value;
+    point.y = value;
+    point.z = value;
   }
 
 
@@ -206,9 +215,19 @@ angular.module('data')
   * @param {Point3D} [position]
   * @param {Point3D} [rotation]
   * @param {Point3D} [scale]
+  * @property {Uuid} uuid
+  * @property {string} name
+  * @property {Point3D} position
+  * @property {Point3D} rotation
+  * @property {Point3D} scale
   */
   function ObjectTransform(object_uuid, name, position, rotation, scale) {
-    this.Set.apply(this, arguments);
+    this.uuid = undefined;
+    this.name = '';
+    this.position = { x: 0, y: 0, z: 0 };
+    this.rotation = { x: 0, y: 0, z: 0 };
+    this.scale    = { x: 1, y: 1, z: 1 };
+    this.Set(object_uuid, name, position, rotation, scale);
   }
 
 
@@ -224,11 +243,16 @@ angular.module('data')
   * @returns {angular_module.data.journeyType.ObjectTransform} this
   */
   ObjectTransform.prototype.Set = function(object_uuid, name, position, rotation, scale) {
-    this.uuid = object_uuid;
-    this.name = name || '';
-    this.position = ClonePoint3D(position);
-    this.rotation = ClonePoint3D(rotation);
-    this.scale = ClonePoint3D(scale, 1);
+    if (typeof object_uuid === 'string')
+      this.uuid = object_uuid;
+    if (typeof name === 'string')
+      this.name = name;
+    if (typeof position !== 'undefined')
+      CopyPoint3D(this.position, position);
+    if (typeof rotation !== 'undefined')
+      CopyPoint3D(this.rotation, rotation);
+    if (typeof scale !== 'undefined')
+      CopyPoint3D(this.scale, scale, 1);
     return this;
   };
 
@@ -296,9 +320,22 @@ angular.module('data')
   * @param {THREE.Object3D} object
   */
   ObjectTransform.prototype.Update = function(object) {
-    this.position = ClonePoint3D(object.position);
-    this.rotation = ClonePoint3D(object.rotation);
-    this.scale    = ClonePoint3D(object.scale, 1);
+    CopyPoint3D(this.position, position);
+    CopyPoint3D(this.rotation, rotation);
+    CopyPoint3D(this.scale, scale, 1);
+  };
+
+  /**
+  *
+  * @memberof angular_module.data.journeyType.ObjectTransform#
+  * @function Clear
+  */
+  ObjectTransform.prototype.Clear = function() {
+    this.uuid = undefined;
+    this.name = '';
+    ResetPoint3D(this.position, 0);
+    ResetPoint3D(this.rotation, 0)
+    ResetPoint3D(this.scale, 1);
   };
 
   /**
@@ -323,6 +360,10 @@ angular.module('data')
   * @param {string} [name]
   * @param {Uuid} [marker]
   * @param {angular_module.data.journeyType.ObjectTransform[]} [contents]
+  * @property {Uuid} uuid
+  * @property {string} name
+  * @property {Uuid} marker
+  * @property {angular_module.data.journeyType.ObjectTransform[]} contents
   */
   function Channel(uuid, name, marker, contents) {
     Data.call(this, uuid, name);
@@ -489,6 +530,13 @@ angular.module('data')
   * @param {number} [radius]
   * @param {angular_module.data.journeyType.Channel[]} [channels]
   * @param {angular_module.data.journeyType.ObjectTransform[]} [objects]
+  * @property {Uuid} uuid
+  * @property {string} name
+  * @property {number} latitude
+  * @property {number} longitude
+  * @property {number} radius
+  * @property {angular_module.data.journeyType.Channel[]} channels
+  * @property {angular_module.data.journeyType.ObjectTransform[]} objects
   */
   function Poi(uuid, name, latitude, longitude, radius, channels, objects) {
     Data.call(this, uuid);
@@ -717,6 +765,9 @@ angular.module('data')
   * @param {Uuid} [uuid]
   * @param {string} [name]
   * @param {Uuid[]} [pois]
+  * @property {Uuid} uuid
+  * @property {string} name
+  * @property {Uuid[]} pois
   */
   function Journey(uuid, name, pois) {
     Data.call(this, uuid, name);
@@ -921,6 +972,11 @@ angular.module('data')
   * @class angular_module.data.journeyType.DataJourney
   * @memberOf angular_module.data.journeyType
   * @augments angular_module.data.journeyType.Data
+  * @property {angular_module.data.journeyType.Journey} journey
+  * @property {angular_module.data.journeyType.Poi[]} pois
+  * @property {angular_module.data.journeyType.Channel[]} channels
+  * @property {angular_module.data.journeyType.Marker[]} markers
+  * @property {THREE.Object3D[]} objects
   */
   function DataJourney() {
     this.journey = new Journey();
