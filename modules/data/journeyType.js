@@ -319,9 +319,9 @@ angular.module('data')
   * @param {THREE.Object3D} object
   */
   ObjectTransform.prototype.Update = function(object) {
-    CopyPoint3D(this.position, position);
-    CopyPoint3D(this.rotation, rotation);
-    CopyPoint3D(this.scale, scale, 1);
+    CopyPoint3D(this.position, object.position);
+    CopyPoint3D(this.rotation, object.rotation);
+    CopyPoint3D(this.scale, object.scale, 1);
   };
 
   /**
