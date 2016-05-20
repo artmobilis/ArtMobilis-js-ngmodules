@@ -6,7 +6,7 @@
 
 angular.module('data')
 
-.factory('DataManagerSvc', ['dataJourneyFactory', function(dataJourneyFactory) {
+.factory('DataManagerSvc', ['journeyType', function(journeyType) {
 
   /*
   * A string, id of an asset type
@@ -21,7 +21,7 @@ angular.module('data')
 
   function DataManagerSvc() {
 
-    var _data_journey = dataJourneyFactory.Create();
+    var _data_journey = new journeyType.DataJourney();
     var _load_promise = Promise.resolve();
     var _event_manager = new AM.EventManager();
     var _data_change_event_name = 'data_changed';
@@ -55,6 +55,23 @@ angular.module('data')
       return _event_manager.Fire(_data_change_event_name, [type, id]);
     }
 
+    function ParseDataDoIt(json, type) {
+      var promise;
+
+      switch (type) {
+        case 'data_journey':
+          promise = _data_journey.FromJson(json).then(function() {
+            NotifyChange('data_journey');
+          });
+        break;
+        default:
+          promise = Promise.resolve();
+        break;
+      }
+
+      return promise;
+    }
+
     /**
     * Loads a data file
     * @memberOf angular_module.data.DataManagerSvc
@@ -64,13 +81,9 @@ angular.module('data')
     */
     function LoadData(url, type) {
       _load_promise = _load_promise.then(function() {
-
-        return dataJourneyFactory.LoadData(url, type, _data_journey)
-        .then(function(data_journey) {
-          _data_journey = data_journey;
-          NotifyChange('data_journey');
+        return AM.LoadJson(url).then(function(json) {
+          return ParseDataDoIt(json, type);
         });
-
       });
 
       return _load_promise;
@@ -84,16 +97,7 @@ angular.module('data')
     * @returns {Promise.<undefined, string>}
     */
     function ParseData(json, type) {
-      _load_promise = _load_promise.then(function() {
-
-        return dataJourneyFactory.ParseData(json, type, _data_journey)
-        .then(function(data_journey) {
-          _data_journey = data_journey;
-          NotifyChange('data_journey');
-        });
-
-      });
-
+      _load_promise = ParseDataDoIt();
       return _load_promise;
     }
 
@@ -102,7 +106,7 @@ angular.module('data')
     * @memberOf angular_module.data.DataManagerSvc
     */
     function Clear() {
-      _data_journey = dataJourneyFactory.Create();
+      _data_journey = new journeyType.DataJourney();
       NotifyChange('data_journey');
     }
 
@@ -128,7 +132,6 @@ angular.module('data')
       var pois = _data_journey.pois;
       var channels = _data_journey.channels;
       var markers = _data_journey.markers;
-      var contents = _data_journey.contents;
       var objects = _data_journey.objects;
 
       var poi_id, i, channel_id, content_id;
@@ -164,8 +167,8 @@ angular.module('data')
           changed = true;
         }
         for (i = 0; i < channel.contents.length;) {
-          content_id = channel.contents[i].uuid;
-          if (typeof contents[content_id] === 'undefined') {
+          object_id = channel.contents[i].uuid;
+          if (typeof objects[object_id] === 'undefined') {
             channel.contents.splice(i, 1);
             changed = true;
           }
@@ -174,14 +177,6 @@ angular.module('data')
         }
         if (changed)
           NotifyChange('channel', channel_id);
-      }
-
-      for (content_id in contents) {
-        var content = contents[content_id];
-        if (typeof objects[content.object] === 'undefined') {
-          content.object = null;
-          NotifyChange('content', content_id);
-        }
       }
     }
 
