@@ -333,7 +333,7 @@ angular.module('data')
     this.uuid = undefined;
     this.name = '';
     ResetPoint3D(this.position, 0);
-    ResetPoint3D(this.rotation, 0)
+    ResetPoint3D(this.rotation, 0);
     ResetPoint3D(this.scale, 1);
   };
 
