@@ -41,9 +41,8 @@ angular.module('journey')
   'MarkerDetectorSvc',
   'CameraSvc',
   'LoadingSvc',
-  'objectFactory',
+  'journeyType',
   (function() {
-
 
   function JourneySceneSvc(
     JourneyManagerSvc,
@@ -51,10 +50,9 @@ angular.module('journey')
     MarkerDetectorSvc,
     CameraSvc,
     LoadingSvc,
-    objectFactory) {
+    journeyType) {
 
 
-    var _image_loader = new AM.ImageLoader();
     var _camera_video_element = CameraSvc.GetVideoElement();
 
     var _running = false;
@@ -77,18 +75,22 @@ angular.module('journey')
 
     var _tracked_obj_manager = new AMTHREE.TrackedObjManager( {
       camera: _user_head,
-      lerp_factor: 0.05,
+      lerp_track_factor: 0.01,
+      lerp_update_factor: 0.3,
+      damping_factor: 0.9,
       timeout: 10
     } );
 
-    var _poi_limit_obj = new THREE.Mesh(new THREE.RingGeometry(1, 1.3, 64),
-      new THREE.MeshBasicMaterial( { color: 0x41A3DC, opacity: 0.5, transparent: true, side: THREE.DoubleSide } ));
-    _poi_limit_obj.position.y = -3;
-    _poi_limit_obj.rotation.x = 1.5708;
+    var _poi_limit_obj = new THREE.Object3D();
+    _scene.add(_poi_limit_obj);
 
-    var _poi_landmarks;
+    var _poi_objects;
 
-    var _channels_landmarks;
+    var _use_fixed_angle = false;
+
+    var _use_web_worker = true;
+
+    var _device_mode = true;
 
 
     var AddPOIMarkers = (function() {
@@ -128,10 +130,13 @@ angular.module('journey')
           var channel = channels[channel_uuid];
           var marker = markers[channel.marker];
 
+          if (!marker)
+            continue;
+
           if (marker.type === 'img')
             MarkerDetectorSvc.AddMarker(marker.url, channel_uuid);
 
-          var object = objectFactory.BuildChannelContents(channel_uuid, DataManagerSvc.GetData());
+          var object = channel.BuildContents(data_journey.objects);
 
           _tracked_obj_manager.Add(object, channel_uuid,
             new Adder(channel_uuid), new Remover(channel_uuid));
@@ -144,23 +149,18 @@ angular.module('journey')
       AddPOIMarkers();
 
       var poi = JourneyManagerSvc.GetCurrentPOI();
+      var objects = DataManagerSvc.GetData().objects;
 
-      _poi_limit_obj.scale.x = _poi_limit_obj.scale.y = _poi_limit_obj.scale.z = poi.radius;
-      _poi_limit_obj.position.x = poi.position.x;
-      _poi_limit_obj.position.z = poi.position.y;
-      _scene.add(_poi_limit_obj);
+      _poi_limit_obj.add(poi.CreateBoundsObject());
 
-      _channels_landmarks = JourneyManagerSvc.GetPOIChannelsLandmarks();
-      _scene.add(_channels_landmarks);
+      _poi_objects = poi.CreateScene(objects);
+      _scene.add(_poi_objects);
+      AMTHREE.PlayAnimatedTextures(_poi_objects);
+      AMTHREE.PlaySounds(_poi_objects);
     }
 
     function OnExitPOI() {
-      _scene.remove(_poi_limit_obj);
-      _scene.remove(_channels_landmarks);
-      _channels_landmarks = undefined;
-
-      MarkerDetectorSvc.ClearMarkers();
-      _tracked_obj_manager.Clear();
+      Reset();
     }
 
     function OnJourneyModeChange() {
@@ -179,49 +179,39 @@ angular.module('journey')
       }
     }
 
-    function StartCamera() {
-      return new Promise(function(resolve, reject) {
-        CameraSvc.Start(resolve, reject);
-      });
-    }
-
-    function StartMarkerDetector(use_web_worker) {
+    function StartMarkerDetector() {
       if (!MarkerDetectorSvc.Started()) {
-        MarkerDetectorSvc.Start(_camera_video_element, use_web_worker);
+        MarkerDetectorSvc.Start(_camera_video_element, _use_web_worker);
       }
     }
 
-    function SetPOILandmarks() {
-      _scene.remove(_poi_landmarks);
-      _poi_landmarks = JourneyManagerSvc.GetPOILandmarks();
-      _scene.add(_poi_landmarks);
-    }
-
     function OnDeviceMove(e) {
+      var vec = new THREE.Vector3(e.detail.x - _user_body.position.x, 0, e.detail.y - _user_body.position.z);
+      _tracked_obj_manager.MoveEnabledObjects(vec);
       _user_body.position.x = e.detail.x;
       _user_body.position.z = e.detail.y;
     }
 
-    function ResetObject(o) {
-      o.position.set(0, 0, 0);
-      o.rotation.set(0, 0, 0);
-      o.scale.set(1, 1, 1);
-    }
-
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Starts the service, and starts the services it depends on, MarkerDetectorSvc, JourneyManagerSvc, CameraSvc.
+    * @param {bool} [use_web_worker=true] - If true, uses a Web Worker for the image detection computations.
+    */
     function Start(use_web_worker) {
       if (Started())
         return;
 
+      _use_web_worker = (typeof use_web_worker === 'boolean') ? use_web_worker : true;
+
       AddTasks(
         function() { return DataManagerSvc.GetLoadPromise(); },
-        StartCamera,
         function() {
           _loading = true;
 
-          StartMarkerDetector(use_web_worker);
+          JourneyManagerSvc.Reset();
 
-          JourneyManagerSvc.Start();
-
+          StartMarkerDetector();
           document.addEventListener('journey_mode_change', OnJourneyModeChange, false);
 
           document.addEventListener('device_move_xy', OnDeviceMove, false);
@@ -236,29 +226,40 @@ angular.module('journey')
       });
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Returns true if started or loading.
+    * @returns {bool}
+    */
     function Started() {
       return _running || _loading;
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Stops the service, and the services it depends on.
+    */
     function Stop() {
       if (!Started())
         return;
 
       return AddTasks(function() {
-      
-        JourneyManagerSvc.Stop();
+        Reset();
+
         document.removeEventListener('journey_mode_change', OnJourneyModeChange, false);
         document.removeEventListener('device_move_xy', OnDeviceMove, false);
         _orientation_control.Disconnect();
         _running = false;
         MarkerDetectorSvc.Stop();
-        CameraSvc.Stop();
 
       });
     }
 
-    function UpdateTracking() {
-      MarkerDetectorSvc.Update();
+    function UpdateTracking(angle) {
+      //MarkerDetectorSvc.Empty();
+      MarkerDetectorSvc.Update(angle);
 
       var tags = MarkerDetectorSvc.GetTags();
       var marker_corners = MarkerDetectorSvc.GetMarker();
@@ -275,7 +276,7 @@ angular.module('journey')
           var poi_channel = poi_channels[i2];
           var channel = channels[poi_channel.uuid];
           var marker = markers[channel.marker];
-          if (marker.type === 'tag' &amp;&amp; marker.tag_id === tag.id) {
+          if (marker &amp;&amp; marker.type === 'tag' &amp;&amp; marker.tag_id === tag.id) {
             MarkerDetectorSvc.SetTransform(tag);
             _tracked_obj_manager.TrackCompose(poi_channel.uuid,
               MarkerDetectorSvc.position,
@@ -286,7 +287,7 @@ angular.module('journey')
       }
 
       if (marker_corners) {
-        console.log('image processed, no marker detected');
+//        console.log('image processed, no marker detected');
         if (marker_corners.matched) {
           console.log('marker detected: ' + marker_corners.uuid);
           MarkerDetectorSvc.SetTransform(marker_corners);
@@ -300,24 +301,49 @@ angular.module('journey')
       _tracked_obj_manager.Update();
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Updates the scene.
+    */
     function Update() {
       if (!Started())
         return;
-
+            
       _orientation_control.Update();
 
-      if (JourneyManagerSvc.GetMode() === JourneyManagerSvc.MODE_POI)
-        UpdateTracking();
+      if (JourneyManagerSvc.GetMode() === JourneyManagerSvc.MODE_POI) {
+        if (_use_fixed_angle) {
+          var alpha = 0;
+          if (_device_mode) {
+            var half_pi = Math.PI / 2;
+            alpha = half_pi * (Math.round(_orientation_control.alpha / half_pi) - 1);
+          }
+          UpdateTracking(alpha);
+        }
+        else
+          UpdateTracking();
+      }
 
       AMTHREE.UpdateAnimatedTextures(_scene);
-
-      MarkerDetectorSvc.Empty();
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Returns an object on the scene, representation of the head of the user. This object is a child of the body object.
+    * @returns {THREE.Object3D}
+    */
     function GetUserHead() {
       return _user_head;
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Returns an object on the scene, representation of the body of the user. This object is the parent of the head object.
+    * @returns {THREE.Object3D}
+    */
     function GetUserBody() {
       return _user_body;
     }
@@ -338,8 +364,56 @@ angular.module('journey')
       return _promise;
     }
 
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Returns the scene.
+    * @returns {THREE.Scene}
+    */
     function GetScene() {
       return _scene;
+    }
+
+    function Reset() {
+      if (_poi_objects) {
+        AMTHREE.StopAnimatedTextures(_poi_objects);
+        AMTHREE.StopSounds(_poi_objects);
+      }
+      _poi_limit_obj.remove.apply(_poi_limit_obj, _poi_limit_obj.children);
+      _scene.remove(_poi_objects);
+      _poi_objects = undefined;
+
+      MarkerDetectorSvc.ClearMarkers();
+      _tracked_obj_manager.Clear();
+    }
+
+    /**
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @description Sets whether corner orientation should be computed, or if the angle is given for each image.
+    * @param {boolean} bool - If false, corner orientation is computed, which is the default behaviour.
+    */
+    function DetectionUseFixedAngle(bool) {
+      if (bool !== _use_fixed_angle) {
+        MarkerDetectorSvc.UseFixedAngle(bool);
+        _use_fixed_angle = bool;
+        if (_running) {
+          Stop();
+          window.setTimeout(function() {
+            Start(_use_web_worker);
+          }, 0);
+        }
+      }
+    }
+
+    /**
+    * Enables or disables the device mode. If fixed angle mode enabled, the angle used is the device's, 0 otherwise.
+    * @function
+    * @memberOf angular_module.journey.JourneySceneSvc
+    * @param {boolean} bool
+    */
+    function SetDeviceMode(bool) {
+      _device_mode = bool;
     }
 
     this.Start = Start;
@@ -349,6 +423,8 @@ angular.module('journey')
     this.GetUserBody = GetUserBody;
     this.GetUserHead = GetUserHead;
     this.GetScene = GetScene;
+    this.DetectionUseFixedAngle = DetectionUseFixedAngle;
+    this.SetDeviceMode = SetDeviceMode;
   }
 
   return JourneySceneSvc;
@@ -363,13 +439,13 @@ angular.module('journey')
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="angular_module.data.html">data</a></li><li><a href="angular_module.data.DataManagerSvc.html">DataManagerSvc</a></li><li><a href="angular_module.data.Journey.html">Journey</a></li><li><a href="angular_module.dataLoading.html">dataLoading</a></li><li><a href="angular_module.dataLoading.channelFactory.html">channelFactory</a></li><li><a href="angular_module.dataLoading.contentFactory.html">contentFactory</a></li><li><a href="angular_module.dataLoading.dataArrayFactory.html">dataArrayFactory</a></li><li><a href="angular_module.dataLoading.dataJourneyFactory.html">dataJourneyFactory</a></li><li><a href="angular_module.dataLoading.journeyFactory.html">journeyFactory</a></li><li><a href="angular_module.dataLoading.markerFactory.html">markerFactory</a></li><li><a href="angular_module.dataLoading.objectFactory.html">objectFactory</a></li><li><a href="angular_module.dataLoading.poiFactory.html">poiFactory</a></li><li><a href="angular_module.journey.html">journey</a></li><li><a href="angular_module.journey.GeolocationSvc.html">GeolocationSvc</a></li><li><a href="angular_module.journey.JourneyManagerSvc.html">JourneyManagerSvc</a></li><li><a href="angular_module.journey.JourneyRenderer.html">JourneyRenderer</a></li><li><a href="angular_module.journey.JourneySceneSvc.html">JourneySceneSvc</a></li><li><a href="angular_module.journey.trackingView.html">trackingView</a></li></ul><h3>Namespaces</h3><ul><li><a href="angular_module.html">angular_module</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="angular_module.data.html">data</a></li><li><a href="angular_module.data.DataManagerSvc.html">DataManagerSvc</a></li><li><a href="angular_module.data.journeyType.html">journeyType</a></li><li><a href="angular_module.data.journeyType.Channel.html">Channel</a></li><li><a href="angular_module.data.journeyType.Data.html">Data</a></li><li><a href="angular_module.data.journeyType.DataJourney.html">DataJourney</a></li><li><a href="angular_module.data.journeyType.Journey.html">Journey</a></li><li><a href="angular_module.data.journeyType.Marker.html">Marker</a></li><li><a href="angular_module.data.journeyType.ObjectTransform.html">ObjectTransform</a></li><li><a href="angular_module.data.journeyType.Poi.html">Poi</a></li><li><a href="angular_module.data.journeyType.PoiChannel.html">PoiChannel</a></li><li><a href="angular_module.journey.html">journey</a></li><li><a href="angular_module.journey.GeolocationSvc.html">GeolocationSvc</a></li><li><a href="angular_module.journey.JourneyManagerSvc.html">JourneyManagerSvc</a></li><li><a href="angular_module.journey.JourneyRenderer.html">JourneyRenderer</a></li><li><a href="angular_module.journey.JourneySceneSvc.html">JourneySceneSvc</a></li><li><a href="angular_module.journey.trackingView.html">trackingView</a></li></ul><h3>Namespaces</h3><ul><li><a href="angular_module.html">angular_module</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Apr 19 2016 16:34:32 GMT+0200 (Paris, Madrid (heure d’été))
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu May 19 2016 16:39:00 GMT+0200 (Paris, Madrid (heure d’été))
 </footer>
 
 <script> prettyPrint(); </script>

@@ -1,4 +1,32 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: data/journeyType.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: data/journeyType.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
 * @class angular_module.data.journeyType
 * @memberOf angular_module.data
 */
@@ -185,17 +213,18 @@ angular.module('data')
   }
 
   function CopyPoint3D(dst, src, default_value) {
+    if (typeof point !== 'object') point = {};
     if (typeof default_value !== 'number') default_value = 0;
 
-    dst.x = (typeof src.x === 'number') ? src.x : default_value;
-    dst.y = (typeof src.y === 'number') ? src.y : default_value;
-    dst.z = (typeof src.z === 'number') ? src.z : default_value;
+    dst.x = point.x || default_value;
+    dst.y = point.y || default_value;
+    dst.z = point.z || default_value;
   }
 
   function Point3DIsDefault(point, value) {
     if (typeof value === 'undefined')
       value = 0;
-    return point.x === value && point.y === value && point.z === value;
+    return point.x === value &amp;&amp; point.y === value &amp;&amp; point.z === value;
   }
 
   function ResetPoint3D(point, value) {
@@ -293,7 +322,7 @@ angular.module('data')
   * Creates a clone of the target object and applies the transform to it.
   * @memberof angular_module.data.journeyType.ObjectTransform#
   * @function ApplyTransform
-  * @param {Object.<THREE.Object3D>} objects
+  * @param {Object.&lt;THREE.Object3D>} objects
   * @returns {THREE.Object3D}
   */
   ObjectTransform.prototype.ApplyTransform = function(objects) {
@@ -333,7 +362,7 @@ angular.module('data')
     this.uuid = undefined;
     this.name = '';
     ResetPoint3D(this.position, 0);
-    ResetPoint3D(this.rotation, 0);
+    ResetPoint3D(this.rotation, 0)
     ResetPoint3D(this.scale, 1);
   };
 
@@ -387,7 +416,7 @@ angular.module('data')
   Channel.prototype.Set = function(uuid, name, marker, contents) {
     Data.prototype.Set.call(this, uuid, name);
 
-    if (typeof marker === 'string')
+    if (marker instanceof Marker)
       this.marker = marker;
     if (contents instanceof Array)
       this.contents = contents.slice(0);
@@ -453,7 +482,7 @@ angular.module('data')
   * Creates an object parent of the content objects transformed of this channel.
   * @memberof angular_module.data.journeyType.Channel#
   * @function BuildContents
-  * @param {Object.<THREE.Object3D>} objects
+  * @param {Object.&lt;THREE.Object3D>} objects
   * @returns {THREE.Object3D}
   */
   Channel.prototype.BuildContents = function(objects) {
@@ -461,7 +490,7 @@ angular.module('data')
 
     var container = new THREE.Object3D();
 
-    for (var i = 0, c = objects_transforms.length; i < c; ++i) {
+    for (var i = 0, c = objects_transforms.length; i &lt; c; ++i) {
       var transform = objects_transforms[i];
 
       var object = transform.ApplyTransform(objects);
@@ -709,13 +738,13 @@ angular.module('data')
   * Creates an object parent of the objects transformed of this POI, centered on the position of the POI, using CoordinatesConverterSvc.
   * @memberof angular_module.data.journeyType.Poi#
   * @function CreateScene
-  * @param {Object.<THREE.Object3D>} objects
+  * @param {Object.&lt;THREE.Object3D>} objects
   * @returns {THREE.Object3D}
   */
   Poi.prototype.CreateScene = function(objects) {
     var container = new THREE.Object3D();
 
-    for (var i = 0, c = this.objects.length; i < c; ++i) {
+    for (var i = 0, c = this.objects.length; i &lt; c; ++i) {
       var elem = this.objects[i];
       var object = elem.ApplyTransform(objects);
       container.add(object);
@@ -845,7 +874,7 @@ angular.module('data')
   * @returns {boolean} true if the Poi was added, false otherwise, if already present.
   */
   Journey.prototype.AddPoi = function(uuid) {
-    var insert = (this.pois.indexOf(uuid) < 0);
+    var insert = (this.pois.indexOf(uuid) &lt; 0);
     if (insert)
       this.pois.push(uuid);
     return insert;
@@ -866,7 +895,7 @@ angular.module('data')
     if (a === null || b === null) return false;
     if (a.length != b.length) return false;
 
-    for (var i = 0; i < a.length; ++i) {
+    for (var i = 0; i &lt; a.length; ++i) {
       if (a[i] !== b[i]) return false;
     }
     return true;
@@ -875,7 +904,7 @@ angular.module('data')
   function ArrayToObject(arr) {
     var obj = {};
     if (arr) {
-      for (var i = 0, c = arr.length; i < c; ++i) {
+      for (var i = 0, c = arr.length; i &lt; c; ++i) {
         var elem = arr[i];
         obj[elem.uuid] = elem;
       }
@@ -896,7 +925,7 @@ angular.module('data')
     if (!array)
       return;
 
-    for (var i = 0; i < array.length; ++i) {
+    for (var i = 0; i &lt; array.length; ++i) {
       fun(array[i]);
       TraverseObject3DArrayJson(array[i].children, fun);
     }
@@ -1041,7 +1070,7 @@ angular.module('data')
   *
   * @memberof angular_module.data.journeyType.DataJourney#
   * @function FromJson
-  * @returns {Promise.<undefined, string>} A promise that resolves when the loading is complete.
+  * @returns {Promise.&lt;undefined, string>} A promise that resolves when the loading is complete.
   */
   DataJourney.prototype.FromJson = function(json) {
     var scope = this;
@@ -1086,4 +1115,26 @@ angular.module('data')
     DataJourney: DataJourney
   };
 
-}]);
+}]);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="angular_module.data.html">data</a></li><li><a href="angular_module.data.DataManagerSvc.html">DataManagerSvc</a></li><li><a href="angular_module.data.journeyType.html">journeyType</a></li><li><a href="angular_module.data.journeyType.Channel.html">Channel</a></li><li><a href="angular_module.data.journeyType.Data.html">Data</a></li><li><a href="angular_module.data.journeyType.DataJourney.html">DataJourney</a></li><li><a href="angular_module.data.journeyType.Journey.html">Journey</a></li><li><a href="angular_module.data.journeyType.Marker.html">Marker</a></li><li><a href="angular_module.data.journeyType.ObjectTransform.html">ObjectTransform</a></li><li><a href="angular_module.data.journeyType.Poi.html">Poi</a></li><li><a href="angular_module.data.journeyType.PoiChannel.html">PoiChannel</a></li><li><a href="angular_module.journey.html">journey</a></li><li><a href="angular_module.journey.GeolocationSvc.html">GeolocationSvc</a></li><li><a href="angular_module.journey.JourneyManagerSvc.html">JourneyManagerSvc</a></li><li><a href="angular_module.journey.JourneyRenderer.html">JourneyRenderer</a></li><li><a href="angular_module.journey.JourneySceneSvc.html">JourneySceneSvc</a></li><li><a href="angular_module.journey.trackingView.html">trackingView</a></li></ul><h3>Namespaces</h3><ul><li><a href="angular_module.html">angular_module</a></li></ul><h3><a href="global.html">Global</a></h3>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu May 19 2016 16:39:00 GMT+0200 (Paris, Madrid (heure d’été))
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

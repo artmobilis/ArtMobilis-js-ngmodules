@@ -97,7 +97,7 @@ angular.module('data')
     * @returns {Promise.<undefined, string>}
     */
     function ParseData(json, type) {
-      _load_promise = ParseDataDoIt();
+      _load_promise = ParseDataDoIt(json, type);
       return _load_promise;
     }
 

@@ -204,6 +204,7 @@ angular.module('journey')
   */
   function Stop() {
     if (_running) {
+      Reset();
       GeolocationSvc.Stop();
       DataManagerSvc.RemoveListenerDataChange(OnDataChange);
       document.removeEventListener('device_move_xy', OnDeviceMove, false);
@@ -218,70 +219,6 @@ angular.module('journey')
   */
   function Running() {
     return _running;
-  }
-
-  /**
-  * Returns a new object containing the landmarks of all the POIs.
-  * @memberOf angular_module.journey.JourneyManagerSvc
-  * @returns {THREE.Object3D}
-  */
-  function GetPOILandmarks() {
-    var object = new THREE.Object3D();
-
-    var pois = DataManagerSvc.GetData().pois;
-    var objects = DataManagerSvc.GetData().objects;
-
-    for (var poi_id in pois) {
-      var poi = pois[poi_id];
-
-      if (poi.landmark) {
-        var landmark_obj = objects[poi.landmark.object];
-        if (!landmark_obj)
-          continue;
-
-        landmark_obj = landmark_obj.clone();
-        if (poi.landmark.height) landmark_obj.position.y = poi.landmark.height;
-        landmark_obj.position.x = poi.position.x;
-        landmark_obj.position.z = poi.position.y;
-        if (poi.landmark.scale) {
-          landmark_obj.scale.x = poi.landmark.scale;
-          landmark_obj.scale.y = poi.landmark.scale;
-          landmark_obj.scale.z = poi.landmark.scale;
-        }
-
-        object.add(landmark_obj);
-      }
-    }
-
-    return object;
-  }
-
-  /**
-  * Returns a new object containing the landmarks of the channels of the current POIs.
-  * @memberOf angular_module.journey.JourneyManagerSvc
-  * @returns {THREE.Object3D}
-  */
-  function GetPOIChannelsLandmarks() {
-    var poi = _current_poi;
-
-    var landmarks = new THREE.Object3D();
-    var objects = DataManagerSvc.GetData().objects;
-
-    for (var i = 0, c = poi.channels.length; i &lt; c; ++i) {
-      var channel = poi.channels[i];
-      var obj = objects[channel.object];
-      if (typeof obj !== 'undefined') {
-        obj = obj.clone();
-        var position = CoordinatesConverterSvc.ConvertLocalCoordinates(channel.longitude, channel.latitude);
-        obj.position.x = position.x;
-        obj.position.z = position.y;
-        obj.y = channel.altitude || 0;
-        obj.scale.x = obj.scale.y = obj.scale.z = channel.scale || 1;
-        landmarks.add(obj);
-      }
-    }
-
-    return landmarks;
   }
 
   /**
@@ -309,8 +246,6 @@ angular.module('journey')
   this.Start = Start;
   this.Stop = Stop;
   this.Running = Running;
-  this.GetPOILandmarks = GetPOILandmarks;
-  this.GetPOIChannelsLandmarks = GetPOIChannelsLandmarks;
   this.ForceNavigationMode = ForceNavigationMode;
 
   
@@ -324,13 +259,13 @@ angular.module('journey')
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="angular_module.data.html">data</a></li><li><a href="angular_module.data.DataManagerSvc.html">DataManagerSvc</a></li><li><a href="angular_module.data.Journey.html">Journey</a></li><li><a href="angular_module.dataLoading.html">dataLoading</a></li><li><a href="angular_module.dataLoading.channelFactory.html">channelFactory</a></li><li><a href="angular_module.dataLoading.contentFactory.html">contentFactory</a></li><li><a href="angular_module.dataLoading.dataArrayFactory.html">dataArrayFactory</a></li><li><a href="angular_module.dataLoading.dataJourneyFactory.html">dataJourneyFactory</a></li><li><a href="angular_module.dataLoading.journeyFactory.html">journeyFactory</a></li><li><a href="angular_module.dataLoading.markerFactory.html">markerFactory</a></li><li><a href="angular_module.dataLoading.objectFactory.html">objectFactory</a></li><li><a href="angular_module.dataLoading.poiFactory.html">poiFactory</a></li><li><a href="angular_module.journey.html">journey</a></li><li><a href="angular_module.journey.GeolocationSvc.html">GeolocationSvc</a></li><li><a href="angular_module.journey.JourneyManagerSvc.html">JourneyManagerSvc</a></li><li><a href="angular_module.journey.JourneyRenderer.html">JourneyRenderer</a></li><li><a href="angular_module.journey.JourneySceneSvc.html">JourneySceneSvc</a></li><li><a href="angular_module.journey.trackingView.html">trackingView</a></li></ul><h3>Namespaces</h3><ul><li><a href="angular_module.html">angular_module</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="angular_module.data.html">data</a></li><li><a href="angular_module.data.DataManagerSvc.html">DataManagerSvc</a></li><li><a href="angular_module.data.journeyType.html">journeyType</a></li><li><a href="angular_module.data.journeyType.Channel.html">Channel</a></li><li><a href="angular_module.data.journeyType.Data.html">Data</a></li><li><a href="angular_module.data.journeyType.DataJourney.html">DataJourney</a></li><li><a href="angular_module.data.journeyType.Journey.html">Journey</a></li><li><a href="angular_module.data.journeyType.Marker.html">Marker</a></li><li><a href="angular_module.data.journeyType.ObjectTransform.html">ObjectTransform</a></li><li><a href="angular_module.data.journeyType.Poi.html">Poi</a></li><li><a href="angular_module.data.journeyType.PoiChannel.html">PoiChannel</a></li><li><a href="angular_module.journey.html">journey</a></li><li><a href="angular_module.journey.GeolocationSvc.html">GeolocationSvc</a></li><li><a href="angular_module.journey.JourneyManagerSvc.html">JourneyManagerSvc</a></li><li><a href="angular_module.journey.JourneyRenderer.html">JourneyRenderer</a></li><li><a href="angular_module.journey.JourneySceneSvc.html">JourneySceneSvc</a></li><li><a href="angular_module.journey.trackingView.html">trackingView</a></li></ul><h3>Namespaces</h3><ul><li><a href="angular_module.html">angular_module</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Apr 19 2016 16:34:32 GMT+0200 (Paris, Madrid (heure d’été))
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu May 19 2016 16:39:00 GMT+0200 (Paris, Madrid (heure d’été))
 </footer>
 
 <script> prettyPrint(); </script>
