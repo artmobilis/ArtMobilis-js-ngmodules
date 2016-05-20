@@ -185,12 +185,11 @@ angular.module('data')
   }
 
   function CopyPoint3D(dst, src, default_value) {
-    if (typeof point !== 'object') point = {};
     if (typeof default_value !== 'number') default_value = 0;
 
-    dst.x = point.x || default_value;
-    dst.y = point.y || default_value;
-    dst.z = point.z || default_value;
+    dst.x = (typeof src.x === 'number') ? src.x : default_value;
+    dst.y = (typeof src.y === 'number') ? src.y : default_value;
+    dst.z = (typeof src.z === 'number') ? src.z : default_value;
   }
 
   function Point3DIsDefault(point, value) {
@@ -388,7 +387,7 @@ angular.module('data')
   Channel.prototype.Set = function(uuid, name, marker, contents) {
     Data.prototype.Set.call(this, uuid, name);
 
-    if (marker instanceof Marker)
+    if (typeof marker === 'string')
       this.marker = marker;
     if (contents instanceof Array)
       this.contents = contents.slice(0);
