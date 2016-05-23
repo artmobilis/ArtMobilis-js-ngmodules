@@ -646,11 +646,11 @@ angular.module('data')
   */
   Poi.prototype.AddChannel = function(poi_channel) {
     var insert = !this.channels.find(function(elem) {
-      return poi_channel.uuid === uuid;
+      return poi_channel.uuid === elem.uuid;
     });
 
     if (insert) {
-      poi.channels.push(poi_channel);
+      this.channels.push(poi_channel);
     }
     return insert;
   };
