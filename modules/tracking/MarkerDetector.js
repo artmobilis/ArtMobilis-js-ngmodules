@@ -73,7 +73,8 @@ function MarkerDetector() {
   */
 
   function DetectMarkerImage(image_data, fixed_angle) {
-    //_marker_tracker.Log();
+    if (_marker_tracker.GetTrainedImageCount() === 0)
+      return;
 
     _marker_tracker.ComputeImage(image_data, fixed_angle);
 

@@ -88,6 +88,8 @@
     };
 
     this.Update = function(fixed_angle) {
+      var image;
+
       if (!_enabled)
         return;
 
@@ -98,12 +100,11 @@
         _canvas.height = new_size.height;
         _ctx.drawImage(_video, 0, 0, _canvas.width, _canvas.height);
 
-        var image = _ctx.getImageData(0, 0, _canvas.width, _canvas.height);
-
         if (_use_web_worker) {
           if (_worker && _frame - _frame_worker < 1) {
             ++_frame;
 
+            image = _ctx.getImageData(0, 0, _canvas.width, _canvas.height);
 
             var obj_data = {
               cmd: 'new_img',
@@ -113,9 +114,11 @@
               angle: fixed_angle
             };
             _worker.postMessage(obj_data, [image.data.buffer]);
+            obj_data = null;
           }
         }
         else {
+          image = _ctx.getImageData(0, 0, _canvas.width, _canvas.height);
           _marker_detector.SetDebug(_debug);
           var result = _marker_detector.ComputeImage(image, fixed_angle);
           _marker = result.marker;
@@ -124,6 +127,8 @@
 
 
       }
+
+      image = null;
     };
 
     this.Stop = function() {
