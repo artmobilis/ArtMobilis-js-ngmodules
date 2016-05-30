@@ -1,3 +1,7 @@
+/**
+* Wraps generic image and Aruco marker detection and 3D pose, and eases its usage inside a WebWorker.
+* @class
+*/
 function MarkerDetector() {
   var _tag_detector = new AR.Detector();
   var _tag_detector_enabled = true;
@@ -31,8 +35,46 @@ function MarkerDetector() {
   });
 
 
+  /**
+  * @typedef {object} MarkerDetector.ImageDetectionResult
+  * @property {boolean} matched
+  * @property {object} profiles
+  */
+
+  /**
+  * @typedef {object} MarkerDetector.ArucoCorner
+  * @property {number} x
+  * @property {number} y
+  */
+
+  /**
+  * @typedef {MarkerDetector.ArucoCorner[]} MarkerDetector.ArucoMarkerMatch
+  */
+
+  /**
+  * @typedef {object} MarkerDetector.ImageMatch
+  * @property {boolean} matched
+  * @property {object} profiles - debug information
+  * @property {Uuid | undefined} uuid - provided if this.matched == true, uuid of the matched marker
+  * @property {jsfeat.keypoint_t[] | undefined} corners - provided if this.matched == true, screen's corners that matched corners of the marker
+  * @property {jsfeat.keypoint_t[] | undefined} trained_corners - debug information provided only in debug mode
+  * @property {jsfeat.matrix_t | undefined} trained_descriptors - debug information provided only in debug mode
+  * @property {jsfeat.keypoint_t[] | undefined} screen_corners - debug information provided only in debug mode
+  * @property {AM.match_t[] | undefined} matches - debug information provided only in debug mode
+  * @property {AM.match_t[] | undefined} matches_mask - debug information provided only in debug mode
+  * @property {ImageData | undefined} image_data - debug information provided only in debug mode
+  * @property {Uuid | undefined} last_uuid - debug information provided only in debug mode
+  */
+
+  /**
+  * @typedef {object} MarkerDetector.ComputeImageResult
+  * @property {MarkerDetector.ArucoMarkerMatch[]} tags
+  * @property {MarkerDetector.ImageMatch} marker
+  */
+
   function DetectMarkerImage(image_data, fixed_angle) {
-    //_marker_tracker.Log();
+    if (_marker_tracker.GetTrainedImageCount() === 0)
+      return;
 
     _marker_tracker.ComputeImage(image_data, fixed_angle);
 
@@ -129,14 +171,77 @@ function MarkerDetector() {
   function CmdEnableImageDetection(data) { EnableImageDetection(data.value); }
   function CmdUseFixedAngle(data)        { UseFixedAngle(data.value); }
 
+  /**
+  *
+  * @function
+  * @param {'new_img'|'add_marker'|'clear'|'active_all'|'active'|'enable_tag_detection'|'enable_image_detection'|'use_fixed_angle'} cmd
+  * @param {object} data
+  */
   this.Command = Command;
+
+  /**
+  *
+  * @function
+  * @param {ImageData} image_data
+  * @param {Uuid} uuid
+  */
   this.AddMarker = AddMarker;
+
+  /**
+  * Removes every trained marker.
+  * @function
+  */
   this.Clear = Clear;
+
+  /**
+  * Enables of disables the detection of every marker.
+  * @function
+  * @param {boolean} bool
+  */
   this.ActiveAll = ActiveAll;
+
+  /**
+  * Enables or disables the detection of a marker.
+  * @function
+  * @param {Uuid} uuid
+  * @param {boolean} bool
+  */
   this.Active = Active;
+
+  /**
+  *
+  * @function
+  * @param {boolean} bool
+  */
   this.EnableImageDetection = EnableImageDetection;
+
+  /**
+  *
+  * @function
+  * @param {boolean} bool
+  */
   this.EnableTagDetection = EnableTagDetection;
+
+  /**
+  *
+  * @function
+  * @param {ImageData} image_data
+  * @param {number} fixed_angle
+  * @returns {MarkerDetector.ComputeImageResult}
+  */
   this.ComputeImage = OnNewImage;
+
+  /**
+  *
+  * @function
+  * @param {boolean} bool - disabled by default
+  */
   this.SetDebug = SetDebug;
+
+  /**
+  *
+  * @function
+  * @param {boolean} bool - disabled by default
+  */
   this.UseFixedAngle = UseFixedAngle;
 }
